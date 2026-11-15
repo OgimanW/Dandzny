@@ -1,15 +1,20 @@
-# Dandžny — príručka hráča (prototyp)
+# Dandžny — príručka hráča
 
-Statická stránka pre hráčov, postavená na [Quartz 5](https://quartz.jzhao.xyz). Obsah sú obyčajné markdown súbory v `quartz-site/content/`, dajú sa otvárať aj v Obsidiane.
+Statická stránka pre hráčov, postavená na [Quartz 5](https://quartz.jzhao.xyz). Obsah sú obyčajné markdown súbory v `content/`, dajú sa otvárať aj v Obsidiane.
 
 ## Spustenie náhľadu
 
 ```bash
-cd quartz-site
 npx quartz build --serve
 ```
 
 Stránka beží na http://localhost:8080 a pri každom uložení súboru sa obnoví.
+
+## Zverejnenie
+
+Po `git push` na vetvu `main` GitHub Action (`.github/workflows/deploy.yml`) stránku zostaví a zverejní na GitHub Pages, trvá to 1–2 minúty. Stav vidno v záložke **Actions** na GitHube.
+
+Stránka je verejná pre každého s odkazom, vyhľadávače ju neindexujú (`noindex`). Do `content/` nedávaj nič, čo nemajú vidieť hráči.
 
 ## Štruktúra obsahu
 
