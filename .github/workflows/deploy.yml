@@ -29,7 +29,7 @@ jobs:
         run: |
           sed -i 's|^  baseUrl:.*|  baseUrl: ogimanw.github.io/Dandzny|' quartz.config.yaml
           grep baseUrl quartz.config.yaml
-      - run: npx quartz build
+      - run: node quartz/bootstrap-cli.mjs build
       - run: rm -f public/CNAME
       - uses: actions/upload-pages-artifact@v3
         with:
