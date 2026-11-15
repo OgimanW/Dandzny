@@ -26,7 +26,9 @@ jobs:
       - run: npm ci
       - run: npx quartz plugin install
       - name: Adresa stránky na GitHub Pages
-        run: sed -i 's|^  baseUrl:.*|  baseUrl: ogimanw.github.io/Dandzny|' quartz.config.yaml
+        run: |
+          sed -i 's|^  baseUrl:.*|  baseUrl: ogimanw.github.io/Dandzny|' quartz.config.yaml
+          grep baseUrl quartz.config.yaml
       - run: npx quartz build
       - run: rm -f public/CNAME
       - uses: actions/upload-pages-artifact@v3
