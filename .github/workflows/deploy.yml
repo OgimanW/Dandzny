@@ -18,13 +18,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
-      - run: npx quartz plugin install
+      - run: node scripts/plugin-index.mjs
       - name: Adresa stránky na GitHub Pages
         run: |
           sed -i 's|^  baseUrl:.*|  baseUrl: ogimanw.github.io/Dandzny|' quartz.config.yaml
