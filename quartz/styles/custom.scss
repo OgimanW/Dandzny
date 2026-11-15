@@ -1,0 +1,152 @@
+@use "./variables.scss" as *;
+
+// ===== Dandžny: vlastné štýly =====
+
+// Štítky pôvodu pod názvom stránky (oficialne / homebrew / kampan / prekliate)
+ul.tags a.tag-link {
+  border-radius: 999px;
+  padding: 0.1rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+ul.tags a.tag-link[href$="/oficialne"] {
+  background: #2f5d8a1f;
+  border-color: #2f5d8a55;
+  color: #2f5d8a;
+}
+ul.tags a.tag-link[href$="/homebrew"] {
+  background: #b0632a1f;
+  border-color: #b0632a66;
+  color: #a2561f;
+}
+ul.tags a.tag-link[href$="/kampan"] {
+  background: #4f7d4a1f;
+  border-color: #4f7d4a66;
+  color: #3f6b3a;
+}
+ul.tags a.tag-link[href$="/prekliate"] {
+  background: #8a2f3a1f;
+  border-color: #8a2f3a66;
+  color: #8a2f3a;
+}
+:root[saved-theme="dark"] {
+  ul.tags a.tag-link[href$="/oficialne"] { color: #8fb8e0; }
+  ul.tags a.tag-link[href$="/homebrew"] { color: #e8a56a; }
+  ul.tags a.tag-link[href$="/kampan"] { color: #9fcf97; }
+  ul.tags a.tag-link[href$="/prekliate"] { color: #e08a95; }
+}
+
+// Zoznamy v kapitolách: len názvy, bez dátumov a štítkov
+ul.section-ul li.section-li > .section {
+  display: block;
+  & > .meta,
+  & > ul.tags {
+    display: none;
+  }
+  h3 {
+    margin: 0.35rem 0;
+  }
+}
+
+// Relikvie majú vlastnú tabuľku, automatický zoznam pod ňou by bol duplicitný
+body[data-slug="kampan/relikvie/index"] .page-listing {
+  display: none;
+}
+
+// Bez technických popisov: počet záznamov v tabuľke a „Created with Quartz"
+.bases-view-meta,
+footer > p:first-child {
+  display: none;
+}
+
+// Callout [!homebrew]: naše pravidlo pri stole
+.callout[data-callout="homebrew"] {
+  --color: #b0632a;
+  --border: #b0632a55;
+  --bg: #b0632a12;
+  --callout-icon: url('data:image/svg+xml; utf8, <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>');
+}
+
+// Callout [!neobjavene] a značka ??? pre ešte neobjavené veci
+.callout[data-callout="neobjavene"] {
+  --color: #6b5aa6;
+  --border: #6b5aa655;
+  --bg: #6b5aa612;
+  --callout-icon: var(--callout-icon-question);
+}
+span.neobjavene {
+  display: inline-block;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  background: repeating-linear-gradient(-45deg, #6b5aa622, #6b5aa622 4px, #6b5aa60d 4px, #6b5aa60d 8px);
+  border: 1px dashed #6b5aa688;
+  color: #6b5aa6;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: help;
+}
+
+// Tabuľky: kompaktné a čitateľné, hlavne na mobile
+article .table-container {
+  margin: 1rem 0;
+  -webkit-overflow-scrolling: touch;
+
+  & > table {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+
+    & > * {
+      line-height: 1.4;
+    }
+    th,
+    td {
+      min-width: 0;
+      vertical-align: top;
+      padding: 0.45rem 0.6rem;
+      line-height: 1.4;
+    }
+    th {
+      background: var(--lightgray);
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) {
+      background: var(--highlight);
+    }
+  }
+}
+
+@media all and ($mobile) {
+  article {
+    font-size: 1rem;
+  }
+  article .table-container > table {
+    font-size: 0.875rem;
+
+    th,
+    td {
+      padding: 0.4rem 0.45rem;
+    }
+  }
+  // menu nesmie prebliknúť pri načítaní stránky, kým sa nespustí jeho skript
+  // (obsah menu ukáž až po ťuknutí na ☰, ktoré pridá triedu mobile-no-scroll)
+  html:not(.mobile-no-scroll) .explorer .explorer-content {
+    display: none;
+  }
+  // väčšie dotykové plochy v menu
+  .explorer li > a,
+  .explorer .folder-button {
+    padding: 0.3rem 0;
+    display: inline-block;
+  }
+}
+
+// Statbloky (blockquote začínajúci tučným názvom)
+article blockquote:not(.callout) {
+  border-left: 3px solid var(--secondary);
+  background: var(--highlight);
+  padding: 0.4rem 1rem;
+  border-radius: 0 6px 6px 0;
+}
