@@ -1,3 +1,3 @@
 ---
-title: Spoznané bytosti
+title: Bytosti družiny
 ---
