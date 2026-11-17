@@ -9,7 +9,5 @@ title: Dandžny
 - [[pravidla/index|⚔️ Pravidlá]]
 - [[magia/index|✨ Mágia]]
 - [[obchody/index|🛒 Obchody]]
-- [[kovacstvo|⚒️ Kováčstvo]]
-- [[dojo-zelezna-past|🥋 Dojo Železná päsť]]
 - [[alchymia-priser|🧪 Alchýmia príšer]]
 - [[kampan/index|📖 Naša kampaň]]

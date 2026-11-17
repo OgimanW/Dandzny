@@ -1,5 +1,5 @@
 ---
-title: ⚒️ Kováčstvo
+title: Kováčstvo
 description: Vylepšovanie zbraní u kováča za zlato. Tagy podľa typu zbrane, najviac 3 upgrady.
 tags: [homebrew]
 ---
