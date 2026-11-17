@@ -3,18 +3,17 @@ title: ✨ Mágia
 description: Štyri magické systémy. Každý má inú kocku, inú cenu a iné riziko.
 ---
 
-## Porovnanie systémov
+### [[arkanna-magia|Arkánna mágia]]
+Čaruješ cez **Magic Dice** z magického vybavenia (prúty, palice, klobúky). Kúzla si vymýšľaš sám alebo používaš [[magia/slova-moci/index|Slová moci]]. Rovnaké hodnoty na kockách ti spôsobia **Arcane Feedback**. Vybavenie kúpiš v [[arcanum|ARCANE]].
 
-| Systém | Kocka | Odkiaľ ju máš | Čo ťa to stojí | Čo sa môže pokaziť |
-| --- | --- | --- | --- | --- |
-| [[arkanna-magia\|Arkánna mágia]] | **MD** (d6) | z magického vybavenia (prúty, palice…), max 4 | 1 Únava za každú 4–6 | **Arcane Feedback** pri rovnakých hodnotách |
-| [[grimoarova-magia\|Grimoárová mágia]] | **GD** (d6) | toľko, koľko máš voľných slotov, max 4 | 1 Únava za každú 4–6 | **Mishap** pri sérii rovnakých hodnôt |
-| [[magia-vyssej-moci\|Mágia Vyššej moci]] | **FD** (d6) | zo sľubov, obetí a úloh pre tvoju Vyššiu moc, max 4 | poškodenie WIL za každú kocku | strata FD, keď porušíš sľub |
-| [[privolavanie-duchov\|Privolávanie duchov]] | — | meno ducha + WIL save na jeho Príbytku | sloty inventára podľa veľkosti ducha | **Scorn** (pohrdanie) pri neúspechu |
+### [[grimoarova-magia|Grimoárová mágia]]
+Sesielaš pevné kúzla z **grimoáru**. Koľko máš voľných slotov, toľko máš kociek, takže čím viac nesieš, tým slabšie čaruješ. Séria rovnakých hodnôt spôsobí **mishap**. Kúzla: [[grimoarove-kuzla|Grimoárové kúzla]].
+
+### [[magia-vyssej-moci|Mágia Vyššej moci]]
+Robíš **Zázraky** za sľub svojej Vyššej moci. Kocky viery získavaš modlitbami, obetami a úlohami a platíš za ne vôľou (WIL). Bohovia: [[kaldra|Kaldra]], [[lyriel|Lyriel]].
+
+### [[privolavanie-duchov|Privolávanie duchov]]
+Keď poznáš **meno ducha**, privoláš ho na jeho Príbytku a duch za teba robí, čo vie. Zaberá sloty v inventári. Duchovia: [[flame|Flame]].
 
 > [!warning] Systémy sa nemiešajú
-> MD z arkánneho vybavenia nemôžeš použiť na grimoár a GD z voľných slotov zas nemôžeš použiť na Arkánnu mágiu.
-
-## Kde čo zohnať
-- Arkánne vybavenie, licencie a slabšie Slová moci: [[arcanum|obchod ARCANUM]]
-- Zoznam Slov moci, ktoré družina pozná: [[magia/slova-moci/index|Slová moci]]
+> Kocky z jedného systému nemôžeš použiť v inom.
