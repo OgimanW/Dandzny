@@ -86,9 +86,6 @@ Magické predmety dávajú MD a majú **Power**, ktorá chráni pred poškodení
 | Oblečenie | +1 MD | — |
 | Klobúky | +1 MD | — |
 
-> [!homebrew] Naše pravidlo
-> Veľké predmety (palice, veľké knihy) dávajú **+2 MD**.
-
 ### Ako funguje Power
 - **Arcane Feedback:** míňaš Power 1:1 za každú zrušenú kocku so zdvojenou hodnotou.
 - **Nepriateľovo kúzlo:** po oznámení počtu MD (ale pred hodom) môžeš míňať Power na zrušenie kociek.

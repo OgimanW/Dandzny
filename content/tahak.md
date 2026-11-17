@@ -23,7 +23,7 @@ tags: [oficialne]
 | Balanced | d8 | kopija, meč, palcát, sekera, cep |
 | Slow (bulky) | d10 | halapartňa, kladivo, dlhý meč |
 
-## Bojové reakcie (BDP)
+## Bojové reakcie
 **Defend** (zadarmo) · **Fight Back** (1 Únava) · **Block** · **Dodge** · **Parry** → [[bojove-reakcie]]
 
 ## Inventár a únava

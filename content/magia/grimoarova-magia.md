@@ -27,9 +27,7 @@ Kúzla sa sesielajú z **grimoáru** a škálujú sa cez **Grimoár Dice (GD, d6
 ## Scrolly a spellbooky
 - **Scroll** = 1 kúzlo na 1 použitie. Sesiela sa ako z grimoáru (GD, Únava, mishapy) a potom sa zničí.
 - **Spellbook** funguje aj samostatne ako bežne: 1 slot, 1 Únava, vlastnosť knihy.
-
-> [!homebrew] Prepis do grimoáru
-> Scroll aj spellbook sa dá prepísať do grimoáru: **50 gp** za zlaté atramenty, **6 hodín**. Predloha sa zničí, spellbook stratí svoju vlastnosť. Kúzlo sa odteraz sesiela ako grimoárová verzia.
+- **Prepis do grimoáru:** scroll aj spellbook sa dá prepísať do grimoáru za **50 gp** (zlaté atramenty) a **6 hodín**. Predloha sa zničí, spellbook stratí svoju vlastnosť. Kúzlo sa odteraz sesiela ako grimoárová verzia.
 
 ## Mishapy
 

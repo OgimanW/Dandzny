@@ -56,9 +56,6 @@ tags: [homebrew]
 | **Bleed X** (krvácanie) | Pri hode X+ cieľ dostane na začiatku svojho ťahu 1d4 STR zranenia (nespúšťa save proti kritickému zraneniu). |
 | **Quick X** (rýchla) | Pri DEX save na to, či konáš pred nepriateľmi, máš DEX o X vyšší. |
 
-> [!homebrew] Quick
-> V BDP platí Quick len proti zbrani s rovnakou kockou. U nás platí pri každom DEX save na poradie.
-
 ## Typy zranenia
 
 | Typ | Efekt |

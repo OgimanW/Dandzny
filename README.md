@@ -38,7 +38,6 @@ content/
 
 ## Značky v texte
 
-- `> [!homebrew] Naše pravidlo` — oranžový box pre naše úpravy pravidiel.
 - `<span class="neobjavene">???</span>` — ešte neobjavená vlastnosť.
 - `[[nazov-suboru]]` alebo `[[nazov-suboru|text]]` — odkaz na inú stránku.
 
