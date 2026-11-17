@@ -1,5 +1,5 @@
 ---
-title: Dojo Železná päsť
+title: 🥋 Dojo Železná päsť
 description: Škola prežitia. Výcvik v bojových reakciách Block, Dodge & Parry.
 tags: [homebrew]
 ---

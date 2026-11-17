@@ -25,7 +25,9 @@ content/
 ├── pravidla/             boj, reakcie, zranenie, inventár, vzdialenosti
 ├── magia/                porovnanie systémov + 4 systémy
 │   └── slova-moci/       1 slovo = 1 súbor
-├── leopoldovo/           obchody a služby
+├── obchody/              bežný obchod, ARCANUM, alchymistické potreby
+├── kovacstvo.md          vylepšovanie zbraní
+├── dojo-zelezna-past.md  výcvik
 ├── alchymia-priser.md    pravidlá alchýmie (odkaz na recepty hore)
 └── kampan/               relikvie/, recepty/, duchovia/, bohovia/, bytosti/, reputácia, zručnosti
 ```
