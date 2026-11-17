@@ -8,4 +8,3 @@ tags: [kampan]
 
 - Kúpiš ho za **75 gp** v [[bezny-obchod|Bežnom obchode]].
 - Nesie **4 sloty** výbavy navyše.
-- Je plachý. V boji alebo pri niečom desivom si hádže **WIL save**, inak sa splaší a uteká.
