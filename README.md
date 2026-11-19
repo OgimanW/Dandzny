@@ -26,8 +26,8 @@ content/
 ├── magia/                porovnanie systémov + 4 systémy
 │   └── slova-moci/       1 slovo = 1 súbor
 ├── obchody/              bežný obchod, ARCANUM, alchymistické potreby, kováčstvo, dojo
-├── alchymia-priser.md    pravidlá alchýmie (odkaz na recepty hore)
-└── kampan/               relikvie/, recepty/, duchovia/, bohovia/, bytosti/, reputácia, zručnosti
+├── alchymia-priser.md    pravidlá alchýmie (odkaz na potiony hore)
+└── kampan/               relikvie/, recepty/ (Potiony), duchovia/, bohovia/, bytosti/, reputácia, zručnosti
 ```
 
 ## Správca (admin)

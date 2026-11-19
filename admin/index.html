@@ -49,9 +49,18 @@ header h1 small { font-size: 1rem; color: var(--muted); font-weight: 600; }
 .status { font-size: .9rem; color: var(--muted); min-height: 1.3em; margin: .25rem 0 0; }
 .status.err { color: var(--red); }
 
-.group { margin-top: 1.5rem; }
-.group h2 { font-size: 1.3rem; padding-bottom: .25rem; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: .5rem; }
-.group h2 .count { font: 600 .8rem "Source Sans 3", sans-serif; color: var(--muted); }
+.group { margin-top: .5rem; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.group > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: .6rem; padding: .65rem .8rem; user-select: none; }
+.group > summary::-webkit-details-marker { display: none; }
+.group > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; flex: none; }
+.group[open] > summary::before { transform: rotate(90deg); }
+.group > summary h2 { font-size: 1.2rem; flex: 1; min-width: 0; }
+.group > summary h2 .parent { color: var(--muted); font-weight: 600; }
+.group > summary .count { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.group[open] > summary { border-bottom: 1px solid var(--line); }
+.group .rows { padding: 0 .55rem; }
+.group .row:last-child { border-bottom: 0; }
+.fold-all { font-size: .85rem; padding: .25rem .6rem; }
 .row { display: flex; align-items: center; gap: .6rem; padding: .55rem .25rem; border-bottom: 1px solid var(--line); }
 .row .main { flex: 1; min-width: 0; }
 .row .title { font-weight: 600; }
@@ -444,6 +453,15 @@ function renderSetup(errMsg) {
   };
 }
 
+const OPEN_KEY = "dandzny-admin-open";
+let openFolders = (() => { try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) || []); } catch { return new Set(); } })();
+function saveOpen() { try { localStorage.setItem(OPEN_KEY, JSON.stringify([...openFolders])); } catch {} }
+const stripEmoji = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "");
+function folderLabel(folder) {
+  if (!folder.includes("/")) return esc(folderTitle(folder));
+  const parent = folder.slice(0, folder.lastIndexOf("/"));
+  return `<span class="parent">${esc(stripEmoji(folderTitle(parent)))} › </span>${esc(folderTitle(folder))}`;
+}
 function folderTitle(folder) {
   if (!folder) return "Úvod";
   const idx = state.items.get(folder + "/index.md");
@@ -485,6 +503,8 @@ function render() {
   }
   const folders = [...groups.keys()].sort((a, b) => a.localeCompare(b, "sk"));
   backlinks = visibleBacklinks();
+  // pri hľadaní a v „Na session" je vecí málo, ukáž ich rozbalené
+  const forceOpen = !!state.query || state.filter === "session";
 
   const rows = folders.map((folder) => {
     const list = groups.get(folder).sort((a, b) => {
@@ -492,11 +512,19 @@ function render() {
       if (ai !== bi) return ai ? -1 : 1;
       return metaOf(a).title.replace(/^[^\p{L}\p{N}]+/u, "").localeCompare(metaOf(b).title.replace(/^[^\p{L}\p{N}]+/u, ""), "sk", { numeric: true });
     });
+    const total = [...state.items.values()].filter((i) => (i.path.includes("/") ? i.path.slice(0, i.path.lastIndexOf("/")) : "") === folder);
+    const seen = total.filter(willBeVisible).length;
+    const pend = total.filter((i) => state.pending.has(i.path)).length;
+    const open = forceOpen || openFolders.has(folder);
     return `
-      <section class="group">
-        <h2>${esc(folderTitle(folder))} <span class="count">${esc(folder || "/")}</span></h2>
-        ${list.map(rowHtml).join("")}
-      </section>`;
+      <details class="group" data-folder="${esc(folder)}" ${open ? "open" : ""}>
+        <summary>
+          <h2>${folderLabel(folder)}</h2>
+          ${pend ? `<span class="badge pending">${pend}</span>` : ""}
+          <span class="count" title="hráči vidia / všetko v kapitole">${seen}/${total.length} 👁</span>
+        </summary>
+        <div class="rows">${list.map(rowHtml).join("")}</div>
+      </details>`;
   }).join("");
 
   $("#app").innerHTML = `
@@ -508,6 +536,7 @@ function render() {
       ${chip("session", "★ Na session")}${chip("all", "Všetko")}${chip("visible", "Hráči vidia")}${chip("hidden", "Skryté")}
     </div>
     <p class="status" id="status"></p>
+    ${rows && !(state.query || state.filter === "session") ? `<div class="actions"><button class="btn fold-all" data-fold="1">Rozbaliť všetko</button><button class="btn fold-all" data-fold="0">Zbaliť všetko</button></div>` : ""}
     ${onlyPub ? `<p class="note">${onlyPub} ${onlyPub === 1 ? "vec je" : onlyPub < 5 ? "veci sú" : "vecí je"} zatiaľ len na stránke, nie v knižnici. Pri skrytí sa do knižnice uložia samy, alebo <button class="btn" id="backupBtn">ulož všetky do knižnice</button></p>` : ""}
     ${rows || `<p class="empty">${state.filter === "session" ? "Na session zatiaľ nič. Hviezdičkou ★ si pripravíš veci, ktoré môžu hráči nájsť." : "Nič nenašlo."}</p>`}
   `;
@@ -558,6 +587,17 @@ function bindMain() {
   };
   $("#reloadBtn").onclick = () => withBusy(async () => { await loadAll(); render(); });
   $("#backupBtn") && ($("#backupBtn").onclick = backupAll);
+  document.querySelectorAll("details.group").forEach((d) => d.ontoggle = () => {
+    if (state.query || state.filter === "session") return;
+    if (d.open) openFolders.add(d.dataset.folder); else openFolders.delete(d.dataset.folder);
+    saveOpen();
+  });
+  document.querySelectorAll("[data-fold]").forEach((b) => b.onclick = () => {
+    const all = [...document.querySelectorAll("details.group")];
+    openFolders = new Set(b.dataset.fold === "1" ? all.map((d) => d.dataset.folder) : []);
+    saveOpen();
+    render();
+  });
   document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.filter = b.dataset.filter; render(); });
   document.querySelectorAll(".row [data-act]").forEach((b) => b.onclick = () => {
     const it = state.items.get(b.closest(".row").dataset.path);

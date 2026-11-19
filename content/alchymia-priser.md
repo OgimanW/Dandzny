@@ -4,8 +4,8 @@ description: Napísal jeden šialený vedec. Elixíry z orgánov porazených tvo
 tags: [homebrew]
 ---
 
-> [!example] Recepty
-> Čo viete vyrobiť z porazených tvorov: **[[cierny-drak|Čierny drak]]** · [[kampan/recepty/index|všetky recepty]]
+> [!example] Potiony
+> Čo viete vyrobiť z porazených tvorov: **[[cierny-drak|Čierny drak]]** · [[kampan/recepty/index|všetky potiony]]
 
 ## Základný princíp
 Efekt elixíru pochádza priamo z popisu tvora. Každý orgán nesie **presne jeden efekt**. Ak má tvor viacero vlastností, má aj viacero získateľných orgánov.
