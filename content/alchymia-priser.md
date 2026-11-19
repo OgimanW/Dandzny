@@ -5,7 +5,7 @@ tags: [homebrew]
 ---
 
 > [!example] Potiony
-> Čo viete vyrobiť z porazených tvorov: **[[cierny-drak|Čierny drak]]** · [[kampan/recepty/index|všetky potiony]]
+> Čo viete vyrobiť z porazených tvorov: [[kampan/recepty/index|všetky potiony]]
 
 ## Základný princíp
 Efekt elixíru pochádza priamo z popisu tvora. Každý orgán nesie **presne jeden efekt**. Ak má tvor viacero vlastností, má aj viacero získateľných orgánov.

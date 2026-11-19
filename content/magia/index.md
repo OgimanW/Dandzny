@@ -13,7 +13,7 @@ Sesielaš pevné kúzla z **grimoáru**. Koľko máš voľných slotov, toľko m
 Robíš **Zázraky** za sľub svojej Vyššej moci. Kocky viery získavaš modlitbami, obetami a úlohami a platíš za ne vôľou (WIL). Bohovia: [[kaldra|Kaldra]], [[lyriel|Lyriel]].
 
 ### [[privolavanie-duchov|Privolávanie duchov]]
-Keď poznáš **meno ducha**, privoláš ho na jeho Príbytku a duch za teba robí, čo vie. Zaberá sloty v inventári. Duchovia: [[flame|Flame]].
+Keď poznáš **meno ducha**, privoláš ho na jeho Príbytku a duch za teba robí, čo vie. Zaberá sloty v inventári. Duchovia: [[kampan/duchovia/index|známi duchovia]].
 
 > [!warning] Systémy sa nemiešajú
 > Kocky z jedného systému nemôžeš použiť v inom.
