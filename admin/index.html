@@ -180,6 +180,8 @@ class GitHubBackend {
   async req(path, opts = {}) {
     const res = await fetch("https://api.github.com" + path, {
       ...opts,
+      cache: "no-store", // GitHub posiela max-age=60; zastaraný „head“ by zhodil ďalší commit
+
       headers: {
         Authorization: "Bearer " + this.c.token,
         Accept: "application/vnd.github+json",
@@ -225,6 +227,17 @@ class GitHubBackend {
 
   // Jeden commit s viacerými zmenami. changes: [{path, content}] (content null = zmazať)
   async commit(which, changes, message) {
+    // Ak sa vetva medzitým posunula (iný commit v tej istej chvíli), skús to znova na novom základe.
+    for (let attempt = 1; ; attempt++) {
+      try { return await this.commitOnce(which, changes, message); }
+      catch (e) {
+        if (e.status !== 422 || !/fast.forward/i.test(e.message) || attempt >= 3) throw e;
+        await new Promise((r) => setTimeout(r, 700 * attempt));
+      }
+    }
+  }
+
+  async commitOnce(which, changes, message) {
     if (!changes.length) return;
     const base = `/repos/${this.c.owner}/${this.repoName(which)}`;
     const prefix = which === "pub" ? "content/" : "";
@@ -645,7 +658,7 @@ function folderOptions() {
   return [...set].sort((a, b) => a.localeCompare(b, "sk"));
 }
 
-function openEditor(it) {
+function openEditor(it, draft) {
   const dlg = $("#editDlg"), form = $("#editForm");
   const isNew = !it;
   const diff = it && it.pub != null && it.priv != null && it.pub !== it.priv;
@@ -679,7 +692,7 @@ function openEditor(it) {
       <h2>${esc(m.title)}</h2>
       <p class="note"><code>${esc(it.path)}</code> · ${isVisibleNow(it) ? "hráči vidia" : "skryté"}${it.priv == null ? " · zatiaľ nie je v knižnici" : ""}</p>
       ${diff ? `<p class="note warn">Text na stránke sa líši od knižnice (asi si ho menil inde). V editore je verzia z knižnice. <button class="btn" type="button" id="usePub">Načítať verziu zo stránky</button></p>` : ""}
-      <label>Celý súbor<textarea name="text" style="min-height: 22rem">${esc(textOf(it))}</textarea></label>
+      <label>Celý súbor<textarea name="text" style="min-height: 22rem">${esc(draft ?? textOf(it))}</textarea></label>
       <p class="note">Uložením sa zmena zapíše do knižnice${isVisibleNow(it) ? " aj na stránku hráčov" : ""}.</p>
       <div class="actions">
         <button class="btn danger left" type="button" id="delBtn">Zmazať</button>
@@ -732,9 +745,14 @@ async function saveItem(it, text) {
   await withBusy(async () => {
     setStatus("Ukladám…");
     const title = metaOf(it).title;
-    await backend.commit("priv", [{ path: it.path, content: text }], `Úprava: ${title}`);
     const live = isVisibleNow(it) && it.pub !== text;
-    if (live) await backend.commit("pub", [{ path: it.path, content: text }], `Správca: úprava ${title}`);
+    try {
+      await backend.commit("priv", [{ path: it.path, content: text }], `Úprava: ${title}`);
+      if (live) await backend.commit("pub", [{ path: it.path, content: text }], `Správca: úprava ${title}`);
+    } catch (e) {
+      openEditor(it, text); // úprava sa nestratí, dá sa uložiť znova
+      throw e;
+    }
     await loadAll();
     render();
     if (live) watchDeploy(); else setStatus(`„${title}" uložené.`);
