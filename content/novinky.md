@@ -3,4 +3,5 @@ title: 🆕 Novinky
 description: Čo ste našli naposledy.
 ---
 
-Zatiaľ nič nové.
+### 19. 11. 2026
+- [[kampan/duchovia/souls-duse|Souls (Duše)]]
