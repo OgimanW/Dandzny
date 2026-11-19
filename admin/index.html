@@ -69,6 +69,34 @@ header h1 small { font-size: 1rem; color: var(--muted); font-weight: 600; }
 .row .desc { font-size: .88rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row.hidden-item .title { color: var(--muted); }
 .row .links-warn { font-size: .82rem; color: var(--warn); }
+.badge.secret { border: 1px dashed var(--muted); color: var(--muted); background: none; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 600; }
+.undo { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: .5rem 0; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 10px; font-size: .9rem; background: var(--panel); }
+.undo span { flex: 1; min-width: 12rem; color: var(--muted); }
+.undo b { color: var(--text); }
+.tabs { display: flex; gap: .35rem; }
+.tabs button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: .2rem .8rem; font-size: .9rem; }
+.tabs button[aria-pressed=true] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.secrets { border: 1px dashed var(--line); border-radius: 10px; padding: .55rem .7rem; display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; font-size: .9rem; }
+.secrets[hidden] { display: none; }
+.secrets .lbl { color: var(--muted); font-weight: 600; margin-right: .2rem; }
+.secret-chip { display: inline-flex; align-items: center; gap: .35rem; border: 1px solid var(--line); border-radius: 999px; padding: .1rem .2rem .1rem .65rem; background: var(--bg); }
+.secret-chip button { border: 0; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: .8rem; font-weight: 600; padding: .15rem .6rem; }
+.secret-chip.revealed { border-color: var(--green); color: var(--green); padding-right: .65rem; }
+.preview { border: 1px solid var(--line); border-radius: 10px; padding: .8rem 1rem; min-height: 22rem; max-height: 60vh; overflow: auto; background: var(--bg); }
+.preview[hidden] { display: none; }
+.preview h1 { font-size: 1.9rem; margin: 0 0 .4rem; }
+.preview h2, .preview h3 { margin: 1rem 0 .4rem; }
+.preview p, .preview ul, .preview ol { margin: .4rem 0; }
+.preview blockquote { margin: .6rem 0; border-left: 3px solid var(--accent); padding: .3rem .9rem; background: #8f9fa91a; border-radius: 0 6px 6px 0; }
+.preview .pv-callout { border: 1px solid var(--green); border-radius: 8px; background: var(--green-bg); }
+.preview .pv-callout-title { font-weight: 600; color: var(--green); }
+.preview table { border-collapse: collapse; font-size: .9rem; }
+.preview th, .preview td { border: 1px solid var(--line); padding: .25rem .5rem; }
+.preview .pv-link { color: var(--accent); font-weight: 600; }
+.preview .pv-link.broken { color: inherit; font-weight: inherit; border-bottom: 1px dotted var(--muted); }
+.preview .pv-secret, .preview .neobjavene { color: var(--muted); border-bottom: 1px dashed var(--muted); cursor: help; }
+.preview .pv-ph { color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: .5rem; text-align: center; }
+.preview .pv-desc { color: var(--muted); margin-top: 0; }
 .badge { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: .05rem .5rem; margin-left: .35rem; vertical-align: 2px; white-space: nowrap; }
 .badge.pending { background: var(--accent); color: var(--bg); }
 .badge.diff { border: 1px solid var(--warn); color: var(--warn); }
@@ -149,6 +177,8 @@ code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .88em; 
 
 const CFG_KEY = "dandzny-admin";
 const SESSION_FILE = "_admin/session.json";
+const NOVINKY = "novinky.md";
+const UNDO_KEY = "dandzny-admin-undo";
 const DEMO = new URLSearchParams(location.search).has("demo");
 
 const $ = (s) => document.querySelector(s);
@@ -178,6 +208,16 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "nova-vec";
 }
 const yamlStr = (s) => /[:#\[\]{}&*!|>'"%@`,]|^\s|\s$/.test(s) ? JSON.stringify(s) : s;
+/* Tajomstvá: v knižnici {{?jantár}}, na stránke hráčov ??? (v texte ako <span class="neobjavene">???</span>). */
+const SECRET = /\{\{\?([\s\S]*?)\}\}/g;
+const secretsOf = (text) => [...(text || "").matchAll(SECRET)].map((m) => m[1]);
+function toPublic(text) {
+  if (text == null) return text;
+  const m = /^---\r?\n[\s\S]*?\r?\n---/.exec(text);
+  const fm = m ? m[0] : "", body = text.slice(fm.length);
+  return fm.replace(SECRET, "???") + body.replace(SECRET, '<span class="neobjavene">???</span>');
+}
+const fmtDate = (d) => `${d.getDate()}. ${d.getMonth() + 1}. ${d.getFullYear()}`;
 function utf8ToB64(s) {
   const bytes = new TextEncoder().encode(s);
   let bin = "";
@@ -319,7 +359,7 @@ class DemoBackend {
         "kampan/relikvie/hadia-koruna.md": rel("Hadia koruna", "Ovládaš hady v okolí.", 3, "Koruna zo šupín."),
         "kampan/relikvie/oko-orakula.md": rel("Oko orákula", "Raz za deň odpoveď áno/nie.", 1, "Sklenené oko."),
         "kampan/bytosti/kon.md": "---\ntitle: Kôň\ndescription: Jazdecké a ťažné zviera. Unesie 4 sloty.\n---\n\nKôň.\n",
-        "kampan/duchovia/flame.md": "---\ntitle: Flame (Plameň)\ndescription: Šesťnohý červený mlok.\n---\n\nDuch ohňa.\n",
+        "kampan/duchovia/flame.md": "---\ntitle: Flame (Plameň)\ndescription: Šesťnohý červený mlok.\n---\n\nDuch ohňa.\n\n- **Má rád:** drevo, {{?jantár}}, {{?staré listy}}\n- **Aktívna:** útok na diaľku za 1d6\n\n> [!tip] Rada\n> Neuhas ho, [[boj|pozri boj]].\n",
         [SESSION_FILE]: JSON.stringify({ paths: ["kampan/relikvie/hadia-koruna.md"] }),
       },
     };
@@ -358,7 +398,7 @@ const state = {
 };
 let backend = null;
 
-const isListed = (p) => p.endsWith(".md") && !p.split("/").some((s) => s.startsWith(".") || s.startsWith("_") || s === "templates" || s === "private");
+const isListed = (p) => p.endsWith(".md") && p !== NOVINKY && !p.split("/").some((s) => s.startsWith(".") || s.startsWith("_") || s === "templates" || s === "private");
 const isVisibleNow = (it) => it.pub != null;
 const willBeVisible = (it) => state.pending.has(it.path) ? state.pending.get(it.path) : isVisibleNow(it);
 const textOf = (it) => it.priv ?? it.pub ?? "";
@@ -413,6 +453,8 @@ async function loadAll() {
     else items.set(p, { path: p, pub: null, priv: t });
   }
   state.items = items;
+  state.pubFiles = pub.files;
+  state.privFiles = priv.files;
   try { state.stars = new Set(JSON.parse(priv.files[SESSION_FILE] || "{}").paths || []); } catch { state.stars = new Set(); }
   for (const p of [...state.pending.keys()]) if (!items.has(p)) state.pending.delete(p);
   if (!state.loaded && state.stars.size) state.filter = "session";
@@ -540,6 +582,7 @@ function render() {
       ${chip("session", "★ Na session")}${chip("all", "Všetko")}${chip("visible", "Hráči vidia")}${chip("hidden", "Skryté")}
     </div>
     <p class="status" id="status"></p>
+    ${lastAction ? `<div class="undo"><span>Naposledy: <b>${esc(lastAction.label)}</b> · ${esc(ago(lastAction.at))}</span><button class="btn" id="undoBtn">↶ Vrátiť</button></div>` : ""}
     ${rows && !(state.query || state.filter === "session") ? `<div class="actions"><button class="btn fold-all" data-fold="1">Rozbaliť všetko</button><button class="btn fold-all" data-fold="0">Zbaliť všetko</button></div>` : ""}
     ${onlyPub ? `<p class="note">${onlyPub} ${onlyPub === 1 ? "vec je" : onlyPub < 5 ? "veci sú" : "vecí je"} zatiaľ len na stránke, nie v knižnici. Pri skrytí sa do knižnice uložia samy, alebo <button class="btn" id="backupBtn">ulož všetky do knižnice</button></p>` : ""}
     ${rows || `<p class="empty">${state.filter === "session" ? "Na session zatiaľ nič. Hviezdičkou ★ si pripravíš veci, ktoré môžu hráči nájsť." : "Nič nenašlo."}</p>`}
@@ -556,12 +599,13 @@ function rowHtml(it) {
   const linkers = vis ? [] : [...(backlinks.get(it.path) || [])].map((p) => metaOf(state.items.get(p)).title);
   const changed = state.pending.has(it.path);
   const chapter = it.path.endsWith("/index.md") || it.path === "index.md";
-  const diff = it.pub != null && it.priv != null && it.pub !== it.priv;
+  const diff = it.pub != null && it.priv != null && it.pub !== toPublic(it.priv);
+  const secrets = secretsOf(it.priv).length;
   return `
     <div class="row ${vis ? "" : "hidden-item"}" data-path="${esc(it.path)}">
       <button class="switch ${changed ? "changed" : ""}" role="switch" aria-checked="${vis}" data-act="toggle" title="${vis ? "Hráči vidia" : "Skryté pred hráčmi"}" aria-label="Hráči vidia: ${esc(m.title)}"></button>
       <div class="main">
-        <div class="title">${esc(m.title)}${chapter ? '<span class="badge chapter">kapitola</span>' : ""}${changed ? `<span class="badge pending">${vis ? "zverejniť" : "skryť"}</span>` : ""}${diff ? '<span class="badge diff" title="Text na stránke sa líši od knižnice">iná verzia</span>' : ""}</div>
+        <div class="title">${esc(m.title)}${chapter ? '<span class="badge chapter">kapitola</span>' : ""}${changed ? `<span class="badge pending">${vis ? "zverejniť" : "skryť"}</span>` : ""}${diff ? '<span class="badge diff" title="Text na stránke sa líši od knižnice">iná verzia</span>' : ""}${secrets ? `<button class="badge secret" data-act="edit" title="Neobjavené vlastnosti – otvor a odkry">??? ${secrets}</button>` : ""}</div>
         ${m.desc ? `<div class="desc">${esc(m.desc)}</div>` : ""}
         ${linkers.length ? `<div class="links-warn" title="Na stránke hráčov sa tieto odkazy zobrazia ako obyčajný text; samostatná položka zoznamu sa vynechá.">↳ odkazuje naň: ${linkers.map(esc).join(", ")}</div>` : ""}
       </div>
@@ -592,6 +636,7 @@ function bindMain() {
   };
   $("#reloadBtn").onclick = () => withBusy(async () => { await loadAll(); render(); });
   $("#backupBtn") && ($("#backupBtn").onclick = backupAll);
+  $("#undoBtn") && ($("#undoBtn").onclick = undoLast);
   document.querySelectorAll("details.group").forEach((d) => d.ontoggle = () => {
     if (state.query || state.filter === "session") return;
     if (d.open) openFolders.add(d.dataset.folder); else openFolders.delete(d.dataset.folder);
@@ -611,6 +656,80 @@ function bindMain() {
     else openEditor(it);
   });
 }
+
+/* ---------- zápis s možnosťou vrátiť ---------- */
+let lastAction = (() => { try { return JSON.parse(localStorage.getItem(UNDO_KEY)); } catch { return null; } })();
+function saveUndo() { try { localStorage.setItem(UNDO_KEY, JSON.stringify(lastAction)); } catch {} }
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return "práve teraz";
+  if (m < 60) return `pred ${m} min`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `pred ${h} h` : new Date(t).toLocaleDateString("sk");
+}
+// Zapíše zmeny do oboch rep a zapamätá si predošlý stav, aby sa dal vrátiť.
+async function commitBoth({ priv = [], pub = [] }, msg, label) {
+  const snap = [
+    ...priv.filter((c) => c.path !== SESSION_FILE).map((c) => ({ repo: "priv", path: c.path, before: state.privFiles[c.path] ?? null })),
+    ...pub.map((c) => ({ repo: "pub", path: c.path, before: state.pubFiles[c.path] ?? null })),
+  ];
+  if (priv.length) await backend.commit("priv", priv, msg);
+  if (pub.length) await backend.commit("pub", pub, "Správca: " + msg);
+  if (label) { lastAction = { at: Date.now(), label, snap }; saveUndo(); }
+}
+async function undoLast() {
+  const a = lastAction;
+  if (!a || !confirm(`Vrátiť „${a.label}"?`)) return;
+  await withBusy(async () => {
+    setStatus("Vraciam…");
+    await loadAll();
+    let touchedPub = false;
+    for (const repo of ["priv", "pub"]) {
+      const files = repo === "pub" ? state.pubFiles : state.privFiles;
+      const ch = a.snap.filter((x) => x.repo === repo && (files[x.path] ?? null) !== x.before).map((x) => ({ path: x.path, content: x.before }));
+      if (!ch.length) continue;
+      await backend.commit(repo, ch, (repo === "pub" ? "Správca: " : "") + `vrátené – ${a.label}`);
+      if (repo === "pub") touchedPub = true;
+    }
+    lastAction = null; saveUndo();
+    await loadAll();
+    render();
+    if (touchedPub) watchDeploy(); else setStatus("Vrátené.");
+  });
+}
+
+/* Novinky: stránka hráčov novinky.md so zoznamom posledných objavov (posledné 3 dni hrania). */
+function parseNovinky(text) {
+  const groups = [];
+  for (const line of (text || "").split(/\r?\n/)) {
+    const h = /^###\s+(.+)$/.exec(line);
+    if (h) { groups.push({ date: h[1].trim(), entries: [] }); continue; }
+    const e = /^- \[\[([^|\]]+)\|([^\]]+)\]\](.*)$/.exec(line);
+    if (e && groups.length) groups[groups.length - 1].entries.push({ path: e[1] + ".md", title: e[2], extra: e[3] });
+  }
+  return groups;
+}
+// news: [{path, title, extra}] – čo pribudlo; gone: [path] – čo zmizlo zo stránky
+function novinkyChange(news, gone) {
+  const old = state.pubFiles[NOVINKY] ?? null;
+  const groups = parseNovinky(old);
+  const drop = new Set([...gone, ...news.map((n) => n.path)]);
+  for (const g of groups) g.entries = g.entries.filter((e) => !drop.has(e.path));
+  const fresh = news.filter((n) => !n.path.endsWith("index.md"));
+  if (fresh.length) {
+    const today = fmtDate(new Date());
+    let g = groups.find((x) => x.date === today);
+    if (!g) { g = { date: today, entries: [] }; groups.unshift(g); }
+    g.entries.unshift(...fresh);
+  }
+  const kept = groups.filter((g) => g.entries.length).slice(0, 3);
+  const body = kept.length
+    ? kept.map((g) => `### ${g.date}\n` + g.entries.map((e) => `- [[${e.path.replace(/\.md$/, "")}|${e.title}]]${e.extra || ""}`).join("\n")).join("\n\n")
+    : "Zatiaľ nič nové.";
+  const text = `---\ntitle: 🆕 Novinky\ndescription: Čo ste našli naposledy.\n---\n\n${body}\n`;
+  return text === old ? [] : [{ path: NOVINKY, content: text }];
+}
+const newsTitle = (it) => metaOf(it).title.replace(/[|\]]/g, "");
 
 /* ---------- akcie ---------- */
 async function withBusy(fn) {
@@ -646,20 +765,22 @@ function toggleStar(it) {
 async function publish() {
   await withBusy(async () => {
     const pubChanges = [], privChanges = [];
-    const names = [];
+    const names = [], news = [], gone = [];
     for (const [path, show] of state.pending) {
       const it = state.items.get(path);
       names.push((show ? "+ " : "− ") + metaOf(it).title);
       if (show) {
-        pubChanges.push({ path, content: textOf(it) });
+        pubChanges.push({ path, content: toPublic(textOf(it)) });
+        news.push({ path, title: newsTitle(it) });
       } else {
+        gone.push(path);
         if (it.priv == null) privChanges.push({ path, content: it.pub }); // nestratiť pri skrytí
         pubChanges.push({ path, content: null });
       }
     }
     setStatus("Ukladám…");
-    if (privChanges.length) await backend.commit("priv", privChanges, "Záloha skrytých vecí");
-    await backend.commit("pub", pubChanges, "Správca: " + names.join(", "));
+    pubChanges.push(...novinkyChange(news, gone));
+    await commitBoth({ priv: privChanges, pub: pubChanges }, names.join(", "), names.join(", "));
     state.pending.clear();
     await loadAll();
     render();
@@ -696,6 +817,39 @@ async function watchDeploy() {
   deployTimer = setTimeout(tick, DEMO ? 1500 : 10000);
 }
 
+/* ---------- náhľad (približne ako na stránke hráčov) ---------- */
+function renderPreview(text, el) {
+  const fmm = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/.exec(text);
+  const fm = frontmatter(toPublic(text));
+  let body = fmm ? text.slice(fmm[0].length) : text;
+  body = body
+    .replace(/%%[\s\S]*?%%/g, "")
+    .replace(/```base[\s\S]*?```/g, '\n<div class="pv-ph">📊 tabuľka (zobrazí sa na stránke)</div>\n')
+    .replace(SECRET, (_, x) => `<span class="pv-secret" title="tajné: ${esc(x)}">???</span>`)
+    .replace(/!?\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]+))?\]\]/g, (_, t, label) => {
+      const p = resolveLink(t);
+      const ok = p && willBeVisible(state.items.get(p));
+      return `<span class="pv-link${ok ? "" : " broken"}"${ok ? "" : ' title="skryté – hráči uvidia len text"'}>${esc(label || t.split("/").pop())}</span>`;
+    });
+  let html = window.marked ? window.marked.parse(body) : `<pre style="white-space:pre-wrap">${esc(body)}</pre>`;
+  if (window.DOMPurify) html = window.DOMPurify.sanitize(html);
+  el.innerHTML = `<h1>${esc(fm.title || "")}</h1>${fm.description ? `<p class="pv-desc">${esc(fm.description)}</p>` : ""}${html}`;
+  // callouty > [!tip] Názov
+  el.querySelectorAll("blockquote").forEach((bq) => {
+    const p = bq.querySelector("p"), t = p?.firstChild;
+    if (!t || t.nodeType !== 3) return;
+    const m = /^\[!(\w+)\][-+]?[ \t]*([^\n]*)\n?/.exec(t.textContent);
+    if (!m) return;
+    t.textContent = t.textContent.slice(m[0].length);
+    bq.classList.add("pv-callout");
+    const title = document.createElement("div");
+    title.className = "pv-callout-title";
+    title.textContent = m[2] || m[1];
+    bq.prepend(title);
+  });
+  window.DandznyDice?.linkify(el);
+}
+
 /* ---------- editor ---------- */
 function folderOptions() {
   const set = new Set();
@@ -706,7 +860,7 @@ function folderOptions() {
 function openEditor(it, draft) {
   const dlg = $("#editDlg"), form = $("#editForm");
   const isNew = !it;
-  const diff = it && it.pub != null && it.priv != null && it.pub !== it.priv;
+  const diff = it && it.pub != null && it.priv != null && it.pub !== toPublic(it.priv);
   if (isNew) {
     const folders = folderOptions();
     const def = folders.includes("kampan/relikvie") ? "kampan/relikvie" : folders[0];
@@ -721,7 +875,7 @@ function openEditor(it, draft) {
         <label>Náboje<input type="text" name="naboje"></label>
         <label>Dobitie<input type="text" name="dobitie"></label>
       </div>
-      <label>Text <span class="hint">markdown; <code>&lt;span class="neobjavene"&gt;???&lt;/span&gt;</code> = neobjavená vlastnosť</span><textarea name="body"></textarea></label>
+      <label>Text <span class="hint">markdown; <code>{{?jantár}}</code> = neobjavená vlastnosť (hráči vidia ???, odkryješ ju v ✎)</span><textarea name="body"></textarea></label>
       <label class="check"><input type="checkbox" name="publishNow"> hneď zverejniť hráčom</label>
       <label class="check"><input type="checkbox" name="star" checked> ★ pripraviť na session</label>
       <div class="actions">
@@ -737,15 +891,54 @@ function openEditor(it, draft) {
       <h2>${esc(m.title)}</h2>
       <p class="note"><code>${esc(it.path)}</code> · ${isVisibleNow(it) ? "hráči vidia" : "skryté"}${it.priv == null ? " · zatiaľ nie je v knižnici" : ""}</p>
       ${diff ? `<p class="note warn">Text na stránke sa líši od knižnice (asi si ho menil inde). V editore je verzia z knižnice. <button class="btn" type="button" id="usePub">Načítať verziu zo stránky</button></p>` : ""}
-      <label>Celý súbor<textarea name="text" style="min-height: 22rem">${esc(draft ?? textOf(it))}</textarea></label>
+      <div class="tabs"><button type="button" data-tab="edit" aria-pressed="true">Upraviť</button><button type="button" data-tab="preview" aria-pressed="false">Náhľad pre hráčov</button></div>
+      <div class="secrets" id="secretsBox"></div>
+      <div id="editPane">
+        <label>Celý súbor<textarea name="text" style="min-height: 22rem">${esc(draft ?? textOf(it))}</textarea></label>
+        <div class="actions" style="justify-content:flex-start;margin-top:.5rem"><button class="btn" type="button" id="markSecret" title="Vyber text v editore a označ ho ako neobjavený">🔒 Označiť výber ako tajné</button></div>
+      </div>
+      <div class="preview" id="previewPane" hidden></div>
       <p class="note">Uložením sa zmena zapíše do knižnice${isVisibleNow(it) ? " aj na stránku hráčov" : ""}.</p>
       <div class="actions">
         <button class="btn danger left" type="button" id="delBtn">Zmazať</button>
         <button class="btn" value="cancel" formnovalidate>Zrušiť</button>
         <button class="btn primary" value="save">Uložiť</button>
       </div>`;
-    if (diff) $("#usePub").onclick = () => { form.text.value = it.pub; };
     $("#delBtn").onclick = () => deleteItem(it);
+    const ta = form.text;
+    const original = secretsOf(textOf(it));
+    const syncSecrets = () => {
+      const left = secretsOf(ta.value);
+      const opened = original.filter((x) => !left.includes(x) && ta.value.includes(x));
+      const box = $("#secretsBox");
+      box.hidden = !left.length && !opened.length;
+      box.innerHTML = `<span class="lbl">Neobjavené:</span>` +
+        left.map((x, i) => `<span class="secret-chip">${esc(x)}<button type="button" data-reveal="${i}">Odkryť</button></span>`).join("") +
+        opened.map((x) => `<span class="secret-chip revealed">✓ ${esc(x)}</span>`).join("") +
+        (opened.length ? `<span class="note" style="flex-basis:100%">Odkryté sa hráčom ukáže po uložení.</span>` : "");
+      box.querySelectorAll("[data-reveal]").forEach((b) => b.onclick = () => {
+        let n = -1;
+        ta.value = ta.value.replace(SECRET, (m, inner) => (++n === +b.dataset.reveal ? inner : m));
+        syncSecrets();
+      });
+    };
+    if (diff) $("#usePub").onclick = () => { ta.value = it.pub; syncSecrets(); };
+    ta.addEventListener("input", syncSecrets);
+    syncSecrets();
+    $("#markSecret").onclick = () => {
+      const a = ta.selectionStart, z = ta.selectionEnd;
+      if (a === z) { ta.focus(); return; }
+      ta.setRangeText(`{{?${ta.value.slice(a, z)}}}`, a, z, "end");
+      ta.focus();
+      syncSecrets();
+    };
+    form.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => {
+      const pv = b.dataset.tab === "preview";
+      form.querySelectorAll("[data-tab]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $("#editPane").hidden = pv;
+      $("#previewPane").hidden = !pv;
+      if (pv) renderPreview(ta.value, $("#previewPane"));
+    });
   }
   form.onsubmit = (e) => {
     if (e.submitter?.value !== "save") return;
@@ -777,8 +970,10 @@ async function createItem(f) {
       state.stars.add(path);
       privChanges.push({ path: SESSION_FILE, content: JSON.stringify({ paths: [...state.stars].sort() }, null, 2) + "\n" });
     }
-    await backend.commit("priv", privChanges, `Nová vec: ${title}`);
-    if (f.get("publishNow")) await backend.commit("pub", [{ path, content: text }], `Správca: + ${title}`);
+    const pub = f.get("publishNow")
+      ? [{ path, content: toPublic(text) }, ...novinkyChange([{ path, title: title.replace(/[|\]]/g, "") }], [])]
+      : [];
+    await commitBoth({ priv: privChanges, pub }, `Nová vec: ${title}`, pub.length ? `+ ${title}` : `nová vec ${title}`);
     await loadAll();
     render();
     if (f.get("publishNow")) watchDeploy(); else setStatus(`„${title}" uložené do knižnice (skryté).`);
@@ -786,14 +981,19 @@ async function createItem(f) {
 }
 
 async function saveItem(it, text) {
-  if (text === textOf(it) && !(it.pub != null && it.pub !== text)) return;
+  if (text === textOf(it) && !(it.pub != null && it.pub !== toPublic(text))) return;
   await withBusy(async () => {
     setStatus("Ukladám…");
     const title = metaOf(it).title;
-    const live = isVisibleNow(it) && it.pub !== text;
+    const live = isVisibleNow(it) && it.pub !== toPublic(text);
+    // odkryté tajomstvá = tie, ktoré v novom texte už nie sú tajné
+    const now = secretsOf(text);
+    const revealed = secretsOf(textOf(it)).filter((x) => !now.includes(x) && text.includes(x));
+    const pub = live ? [{ path: it.path, content: toPublic(text) }] : [];
+    if (live && revealed.length) pub.push(...novinkyChange([{ path: it.path, title: newsTitle(it), extra: ` — odhalené: ${revealed.join(", ")}` }], []));
+    const label = revealed.length ? `${title}: odkryté ${revealed.join(", ")}` : `úprava ${title}`;
     try {
-      await backend.commit("priv", [{ path: it.path, content: text }], `Úprava: ${title}`);
-      if (live) await backend.commit("pub", [{ path: it.path, content: text }], `Správca: úprava ${title}`);
+      await commitBoth({ priv: [{ path: it.path, content: text }], pub }, `Úprava: ${title}`, label);
     } catch (e) {
       openEditor(it, text); // úprava sa nestratí, dá sa uložiť znova
       throw e;
@@ -809,8 +1009,10 @@ async function deleteItem(it) {
   if (!confirm(`Naozaj zmazať „${title}" z knižnice${isVisibleNow(it) ? " aj zo stránky hráčov" : ""}? (V histórii repa ostane.)`)) return;
   $("#editDlg").close();
   await withBusy(async () => {
-    if (it.priv != null) await backend.commit("priv", [{ path: it.path, content: null }], `Zmazané: ${title}`);
-    if (it.pub != null) await backend.commit("pub", [{ path: it.path, content: null }], `Správca: zmazané ${title}`);
+    await commitBoth({
+      priv: it.priv != null ? [{ path: it.path, content: null }] : [],
+      pub: it.pub != null ? [{ path: it.path, content: null }, ...novinkyChange([], [it.path])] : [],
+    }, `Zmazané: ${title}`, `zmazané ${title}`);
     state.pending.delete(it.path);
     state.stars.delete(it.path);
     await loadAll();
@@ -845,5 +1047,7 @@ window.addEventListener("beforeunload", (e) => { if (state.pending.size) e.preve
 start();
 </script>
 <script src="../static/dice.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
 </body>
 </html>

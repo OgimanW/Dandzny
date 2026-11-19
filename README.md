@@ -38,6 +38,9 @@ Na **/admin/** (napr. `https://ogimanw.github.io/Dandzny/admin/`) je rozhranie, 
 - **Stránka hráčov** = `content/` v tomto repe: len to, čo je zverejnené.
 - Prepínač pri veci → **Zverejniť**: vec sa skopíruje do `content/` (alebo zmaže), stránka sa prestaví za 1–2 minúty.
 - Odkaz `[[...]]` na skrytú stránku sa na webe zobrazí ako obyčajný text a položka zoznamu, ktorá je len takýmto odkazom, sa vynechá (napr. úvodný zoznam kapitol). Správca pri skrytej veci ukáže, ktoré stránky na ňu odkazujú.
+- **Neobjavené vlastnosti:** v knižnici píš `{{?jantár}}`, hráči uvidia `???`. V ✎ ich odkryješ tlačidlom *Odkryť* (alebo označíš výber 🔒) a po uložení ich hráči uvidia. Náhľad pre hráčov je v editore na karte *Náhľad*.
+- **Novinky:** správca sám píše `content/novinky.md` (posledné 3 dni hrania: čo pribudlo a čo sa odhalilo), úvodná stránka ju vkladá a takéto veci majú na stránke štítok „nové" (`quartz/static/novinky.js`). Ručne ju neupravuj.
+- **↶ Vrátiť** vráti poslednú akciu správcu (zverejnenie, odkrytie, úpravu, zmazanie) v oboch repách.
 - ★ = pripravené na session. Pred hrou si hviezdičkou označ, čo môžu nájsť, počas hry stačí filter **★ Na session** a prepínač.
 - **+ Nová vec** vytvorí súbor z formulára (skrytý, kým ho nezverejníš). ✎ upraví celý súbor; ak je vec zverejnená, zmena ide aj na stránku.
 

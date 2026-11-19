@@ -26,14 +26,16 @@ export function getStaticResourcesFromPlugins(ctx: BuildCtx) {
     }
   }
 
-  // Dandžny: hádzanie kockami na každej stránke (quartz/static/dice.js, používa ho aj admin/)
-  const dicePath = path.join(process.cwd(), "quartz", "static", "dice.js")
-  if (fs.existsSync(dicePath)) {
+  // Dandžny: vlastné skripty na každej stránke (quartz/static/)
+  // dice.js – hádzanie kockami (používa ho aj admin/), novinky.js – štítok „nové"
+  for (const name of ["dice.js", "novinky.js"]) {
+    const file = path.join(process.cwd(), "quartz", "static", name)
+    if (!fs.existsSync(file)) continue
     staticResources.js.push({
       loadTime: "afterDOMReady",
       contentType: "inline",
       spaPreserve: true,
-      script: fs.readFileSync(dicePath, "utf8"),
+      script: fs.readFileSync(file, "utf8"),
     })
   }
 

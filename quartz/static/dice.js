@@ -94,6 +94,8 @@
   `
   const style = document.createElement("style")
   style.textContent = css
+  // SPA navigácia v Quartzi vymieňa <head>; data-persist ho tam nechá, onPage ho prípadne vráti
+  style.setAttribute("data-persist", "true")
   document.head.appendChild(style)
 
   // ---------- história ----------
@@ -251,6 +253,7 @@
   })
 
   function onPage() {
+    if (!style.isConnected) document.head.appendChild(style)
     mount()
     document.querySelectorAll("article, [data-dice-scope]").forEach(linkify)
   }
