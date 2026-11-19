@@ -13,6 +13,8 @@
   --accent: #8a5a1f; --green: #4f7d4a; --green-bg: #4f7d4a1f; --red: #8a2f3a; --warn: #b0632a;
   --shadow: 0 1px 2px #2a241c14, 0 4px 16px #2a241c0f;
 }
+/* premenné, ktoré používajú kocky (../static/dice.js) */
+:root { --light: var(--panel); --dark: var(--text); --secondary: var(--accent); --lightgray: var(--line); --gray: var(--muted); --highlight: #8f9fa926; }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1714; --panel: #221e1a; --line: #3a332a; --muted: #9a8f7c; --text: #efe8da;
@@ -83,6 +85,8 @@ header h1 small { font-size: 1rem; color: var(--muted); font-weight: 600; }
 
 .pending-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--panel); border-top: 1px solid var(--line); box-shadow: var(--shadow); transform: translateY(110%); transition: transform .2s; }
 .pending-bar.show { transform: none; }
+body:has(.pending-bar.show) .dd-fab { bottom: 84px; }
+body:has(.pending-bar.show) .dd-panel { bottom: 148px; }
 .pending-bar .wrap { display: flex; align-items: center; gap: .6rem; padding-top: .75rem; padding-bottom: .75rem; flex-wrap: wrap; }
 .pending-bar .summary { margin-right: auto; font-size: .95rem; }
 
@@ -542,6 +546,7 @@ function render() {
   `;
   bindMain();
   renderPending();
+  document.querySelectorAll(".row .desc").forEach((d) => window.DandznyDice?.linkify(d));
 }
 
 let backlinks = new Map();
@@ -839,5 +844,6 @@ $("#discardBtn").onclick = () => { state.pending.clear(); render(); };
 window.addEventListener("beforeunload", (e) => { if (state.pending.size) e.preventDefault(); });
 start();
 </script>
+<script src="../static/dice.js"></script>
 </body>
 </html>

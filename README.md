@@ -45,6 +45,10 @@ Prvé spustenie: vytvor súkromné repo `Dandzny-gm` a fine-grained token (Conte
 
 Kód je v `admin/index.html` (jeden súbor, bez buildu), na stránku ho kopíruje workflow.
 
+## Kocky
+
+Na každej stránke aj v správcovi je vpravo dole 🎲: rýchle kocky, vlastný hod (`2d6+1`), záchrana (d20 ≤ vlastnosť) a história. Hody v texte (`d6+1`, `1d8`…) sa dajú ťuknutím hodiť. Každý vidí len svoje hody. Kód: `quartz/static/dice.js` (na stránku ho vkladá `quartz/plugins/index.ts`).
+
 ## Ako pridať novú vec ručne
 
 1. Skopíruj podobný súbor v tom istom priečinku (napr. `kampan/relikvie/vinuty-bic.md`).

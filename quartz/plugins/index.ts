@@ -1,5 +1,7 @@
 import { StaticResources } from "../util/resources"
 import { BuildCtx } from "../util/ctx"
+import fs from "fs"
+import path from "path"
 
 export function getStaticResourcesFromPlugins(ctx: BuildCtx) {
   const staticResources: StaticResources = {
@@ -22,6 +24,17 @@ export function getStaticResourcesFromPlugins(ctx: BuildCtx) {
     if (res?.assets) {
       ;(staticResources.assets ??= []).push(...res.assets)
     }
+  }
+
+  // Dandžny: hádzanie kockami na každej stránke (quartz/static/dice.js, používa ho aj admin/)
+  const dicePath = path.join(process.cwd(), "quartz", "static", "dice.js")
+  if (fs.existsSync(dicePath)) {
+    staticResources.js.push({
+      loadTime: "afterDOMReady",
+      contentType: "inline",
+      spaPreserve: true,
+      script: fs.readFileSync(dicePath, "utf8"),
+    })
   }
 
   // if serving locally, listen for rebuilds and reload the page
