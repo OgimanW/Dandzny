@@ -5,7 +5,7 @@ tags: [oficialne]
 ---
 
 > [!example] Známi duchovia
-> **[[flame|Flame]]** · [[kampan/duchovia/index|všetci duchovia]]
+> [[kampan/duchovia/index|Všetci známi duchovia]]
 
 Svet je plný duchov menších ako bohovia: žijú vo vetre, v potokoch, v ohni aj v stavbách, ktoré postavili ľudia. Duchovia sú kúzla s osobnosťou, príbytkom, náladou a obľúbeným jedlom. Nežartuj s nimi.
 
