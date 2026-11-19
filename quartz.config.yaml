@@ -40,6 +40,8 @@ configuration:
         textHighlight: "#b3aa0288"
   links:
     markdownLinkResolution: shortest
+    # odkazy na nezverejnené stránky sa zobrazia ako text (quartz/plugins/builtins/links.ts)
+    disableBrokenWikilinks: true
   contentIndex:
     enableSiteMap: true
     enableRSS: true

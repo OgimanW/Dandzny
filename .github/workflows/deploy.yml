@@ -31,6 +31,8 @@ jobs:
           grep baseUrl quartz.config.yaml
       - run: node quartz/bootstrap-cli.mjs build
       - run: rm -f public/CNAME
+      - name: Správca obsahu (admin/)
+        run: cp -r admin public/admin
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public

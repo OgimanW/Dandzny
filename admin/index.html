@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dandžny · Správca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbf8f1; --panel: #fffdf8; --line: #e6dfd0; --muted: #8a7f6a; --text: #2a241c;
+  --accent: #8a5a1f; --green: #4f7d4a; --green-bg: #4f7d4a1f; --red: #8a2f3a; --warn: #b0632a;
+  --shadow: 0 1px 2px #2a241c14, 0 4px 16px #2a241c0f;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1714; --panel: #221e1a; --line: #3a332a; --muted: #9a8f7c; --text: #efe8da;
+    --accent: #d9a35a; --green: #93b38c; --green-bg: #93b38c22; --red: #e08a95; --warn: #e8a56a;
+    --shadow: 0 1px 2px #0006, 0 4px 16px #0004;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 16px/1.45 "Source Sans 3", system-ui, sans-serif; padding-bottom: 6rem; }
+h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+header .wrap { display: flex; align-items: center; gap: .75rem; padding-top: .75rem; padding-bottom: .75rem; flex-wrap: wrap; }
+header h1 { font-size: 1.6rem; margin-right: auto; }
+header h1 small { font-size: 1rem; color: var(--muted); font-weight: 600; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: .4rem .8rem; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.btn.danger { color: var(--red); }
+.btn:disabled { opacity: .5; cursor: default; }
+.icon-btn { border: 0; background: none; padding: .3rem; border-radius: 6px; color: var(--muted); font-size: 1.1rem; line-height: 1; }
+.icon-btn:hover { background: var(--line); color: var(--text); }
+
+.toolbar { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0 .5rem; align-items: center; }
+.toolbar input[type=search] { flex: 1 1 200px; min-width: 0; padding: .45rem .7rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.chips { display: flex; gap: .35rem; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: .25rem .75rem; font-size: .9rem; }
+.chip[aria-pressed=true] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.status { font-size: .9rem; color: var(--muted); min-height: 1.3em; margin: .25rem 0 0; }
+.status.err { color: var(--red); }
+
+.group { margin-top: 1.5rem; }
+.group h2 { font-size: 1.3rem; padding-bottom: .25rem; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: .5rem; }
+.group h2 .count { font: 600 .8rem "Source Sans 3", sans-serif; color: var(--muted); }
+.row { display: flex; align-items: center; gap: .6rem; padding: .55rem .25rem; border-bottom: 1px solid var(--line); }
+.row .main { flex: 1; min-width: 0; }
+.row .title { font-weight: 600; }
+.row .desc { font-size: .88rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row.hidden-item .title { color: var(--muted); }
+.row .links-warn { font-size: .82rem; color: var(--warn); }
+.badge { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: .05rem .5rem; margin-left: .35rem; vertical-align: 2px; white-space: nowrap; }
+.badge.pending { background: var(--accent); color: var(--bg); }
+.badge.diff { border: 1px solid var(--warn); color: var(--warn); }
+.badge.chapter { border: 1px solid var(--line); color: var(--muted); }
+
+/* prepínač „hráči vidia" */
+.switch { position: relative; width: 46px; height: 26px; flex: none; border: 0; border-radius: 999px; background: var(--line); padding: 0; transition: background .15s; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--panel); box-shadow: 0 1px 2px #0004; transition: transform .15s; }
+.switch[aria-checked=true] { background: var(--green); }
+.switch[aria-checked=true]::after { transform: translateX(20px); }
+.switch.changed { outline: 2px dashed var(--accent); outline-offset: 2px; }
+.star { font-size: 1.25rem; color: var(--line); }
+.star[aria-pressed=true] { color: #d9a12a; }
+
+.pending-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--panel); border-top: 1px solid var(--line); box-shadow: var(--shadow); transform: translateY(110%); transition: transform .2s; }
+.pending-bar.show { transform: none; }
+.pending-bar .wrap { display: flex; align-items: center; gap: .6rem; padding-top: .75rem; padding-bottom: .75rem; flex-wrap: wrap; }
+.pending-bar .summary { margin-right: auto; font-size: .95rem; }
+
+.empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); padding: 0; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 32px); box-shadow: var(--shadow); }
+dialog::backdrop { background: #0006; }
+dialog form { display: flex; flex-direction: column; gap: .8rem; padding: 1.2rem; }
+dialog h2 { font-size: 1.5rem; }
+label { display: flex; flex-direction: column; gap: .25rem; font-size: .9rem; font-weight: 600; }
+label span.hint { font-weight: 400; color: var(--muted); }
+input[type=text], input[type=password], select, textarea { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: .5rem .65rem; font-weight: 400; width: 100%; }
+textarea { min-height: 14rem; font: 14px/1.5 "IBM Plex Mono", ui-monospace, monospace; resize: vertical; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+@media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+.actions { display: flex; gap: .5rem; justify-content: flex-end; flex-wrap: wrap; }
+.actions .left { margin-right: auto; }
+.check { flex-direction: row; align-items: center; gap: .5rem; font-weight: 400; }
+.note { font-size: .88rem; color: var(--muted); margin: 0; }
+.note.warn { color: var(--warn); }
+
+.setup { max-width: 560px; margin: 2rem auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.4rem; box-shadow: var(--shadow); }
+.setup form { display: flex; flex-direction: column; gap: .8rem; }
+.setup ol { padding-left: 1.2rem; margin: .5rem 0 1rem; font-size: .93rem; }
+.setup ol li { margin-bottom: .35rem; }
+code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .88em; background: var(--line); padding: 0 .3em; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Dandžny <small>správca</small></h1>
+    <a class="btn" id="siteLink" href="../" target="_blank" rel="noopener">Stránka hráčov ↗</a>
+    <button class="btn primary" id="newBtn" hidden>+ Nová vec</button>
+    <button class="icon-btn" id="settingsBtn" title="Nastavenia" aria-label="Nastavenia">⚙</button>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<div class="pending-bar" id="pendingBar">
+  <div class="wrap">
+    <div class="summary" id="pendingSummary"></div>
+    <button class="btn" id="discardBtn">Zrušiť</button>
+    <button class="btn primary" id="publishBtn">Zverejniť</button>
+  </div>
+</div>
+
+<dialog id="editDlg"><form method="dialog" id="editForm"></form></dialog>
+
+<script>
+"use strict";
+/* ============================================================
+   Dandžny – správca obsahu pre hráčov
+   - Súkromné repo (knižnica) = všetko, čo existuje.
+   - Verejné repo (content/) = len to, čo hráči vidia.
+   - Zverejniť = skopírovať súbor do verejného repa, skryť = zmazať ho odtiaľ.
+   ============================================================ */
+
+const CFG_KEY = "dandzny-admin";
+const SESSION_FILE = "_admin/session.json";
+const DEMO = new URLSearchParams(location.search).has("demo");
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+function loadCfg() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; }
+}
+function saveCfg(c) {
+  try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch {}
+}
+let cfg = Object.assign({ owner: "OgimanW", pubRepo: "Dandzny", privRepo: "Dandzny-gm", token: "" }, loadCfg());
+
+/* ---------- markdown pomôcky ---------- */
+function frontmatter(text) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text || "");
+  const out = {};
+  if (!m) return out;
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = /^([A-Za-z_][\w-]*):\s*(.*)$/.exec(line);
+    if (kv) out[kv[1]] = kv[2].replace(/^["']|["']$/g, "");
+  }
+  return out;
+}
+function slugify(s) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "nova-vec";
+}
+const yamlStr = (s) => /[:#\[\]{}&*!|>'"%@`,]|^\s|\s$/.test(s) ? JSON.stringify(s) : s;
+function utf8ToB64(s) {
+  const bytes = new TextEncoder().encode(s);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+/* ---------- GitHub ---------- */
+class GitHubBackend {
+  constructor(c) { this.c = c; }
+  repoName(which) { return which === "pub" ? this.c.pubRepo : this.c.privRepo; }
+
+  async req(path, opts = {}) {
+    const res = await fetch("https://api.github.com" + path, {
+      ...opts,
+      headers: {
+        Authorization: "Bearer " + this.c.token,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(opts.body ? { "Content-Type": "application/json" } : {}),
+      },
+    });
+    if (!res.ok) {
+      let msg = res.statusText;
+      try { msg = (await res.json()).message || msg; } catch {}
+      const err = new Error(`GitHub ${res.status}: ${msg}`);
+      err.status = res.status;
+      throw err;
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  // Načíta celý strom (aj s textom súborov) jedným GraphQL dopytom.
+  async load(which) {
+    const frag = (d) => d === 0
+      ? "entries{name type object{...on Blob{text}}}"
+      : `entries{name type object{...on Blob{text} ...on Tree{${frag(d - 1)}}}}`;
+    const query = `query($o:String!,$n:String!,$e:String!){repository(owner:$o,name:$n){defaultBranchRef{name} object(expression:$e){...on Tree{${frag(7)}}}}}`;
+    const expression = which === "pub" ? "HEAD:content" : "HEAD:";
+    const data = await this.req("/graphql", {
+      method: "POST",
+      body: JSON.stringify({ query, variables: { o: this.c.owner, n: this.repoName(which), e: expression } }),
+    });
+    if (data.errors?.length) throw new Error(data.errors.map((e) => e.message).join("; "));
+    const repo = data.data.repository;
+    if (!repo) throw new Error(`Repo ${this.c.owner}/${this.repoName(which)} neexistuje alebo k nemu token nemá prístup.`);
+    const files = {};
+    const walk = (entries, prefix) => {
+      for (const e of entries || []) {
+        const p = prefix + e.name;
+        if (e.type === "tree") walk(e.object?.entries, p + "/");
+        else if (e.type === "blob") files[p] = e.object?.text ?? "";
+      }
+    };
+    walk(repo.object?.entries, "");
+    return { files };
+  }
+
+  // Jeden commit s viacerými zmenami. changes: [{path, content}] (content null = zmazať)
+  async commit(which, changes, message) {
+    if (!changes.length) return;
+    const base = `/repos/${this.c.owner}/${this.repoName(which)}`;
+    const prefix = which === "pub" ? "content/" : "";
+    const repo = await this.req(base);
+    const branch = repo.default_branch;
+    let headSha;
+    try {
+      headSha = (await this.req(`${base}/git/ref/heads/${branch}`)).object.sha;
+    } catch (e) {
+      if (e.status !== 409 && e.status !== 404) throw e;
+      // prázdne repo: prvý súbor cez Contents API (ten vytvorí vetvu)
+      const first = changes.find((c) => c.content != null);
+      if (!first) return;
+      const path = (prefix + first.path).split("/").map(encodeURIComponent).join("/");
+      await this.req(`${base}/contents/${path}`, {
+        method: "PUT",
+        body: JSON.stringify({ message, content: utf8ToB64(first.content) }),
+      });
+      changes = changes.filter((c) => c !== first);
+      if (!changes.length) return;
+      headSha = (await this.req(`${base}/git/ref/heads/${branch}`)).object.sha;
+    }
+    const head = await this.req(`${base}/git/commits/${headSha}`);
+    const tree = await this.req(`${base}/git/trees`, {
+      method: "POST",
+      body: JSON.stringify({
+        base_tree: head.tree.sha,
+        tree: changes.map((c) => c.content == null
+          ? { path: prefix + c.path, mode: "100644", type: "blob", sha: null }
+          : { path: prefix + c.path, mode: "100644", type: "blob", content: c.content }),
+      }),
+    });
+    const commit = await this.req(`${base}/git/commits`, {
+      method: "POST",
+      body: JSON.stringify({ message, tree: tree.sha, parents: [headSha] }),
+    });
+    await this.req(`${base}/git/refs/heads/${branch}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sha: commit.sha }),
+    });
+  }
+
+  // Stav posledného nasadenia stránky (potrebuje oprávnenie Actions: read; inak null).
+  async lastRun() {
+    try {
+      const r = await this.req(`/repos/${this.c.owner}/${this.c.pubRepo}/actions/runs?per_page=1`);
+      const run = r.workflow_runs?.[0];
+      return run ? { status: run.status, conclusion: run.conclusion, created: run.created_at } : null;
+    } catch { return null; }
+  }
+}
+
+/* ---------- demo bez GitHubu (?demo) ---------- */
+class DemoBackend {
+  constructor() {
+    const rel = (t, d, n, body) => `---\ntitle: ${t}\ndescription: ${d}\nnaboje: ${n}\ntags: [kampan]\n---\n\n${body}\n`;
+    this.repos = {
+      pub: {
+        "index.md": "---\ntitle: Dandžny\n---\n\n- [[boj|⚔️ Boj]]\n- [[flame]]\n",
+        "kampan/relikvie/index.md": "---\ntitle: Relikvie družiny\n---\n",
+        "kampan/relikvie/vinuty-bic.md": rel("Vinutý bič", "d6+1, v boji zasiahne aj ďalší blízky cieľ.", 1, "**d6+1 · 1 náboj**"),
+        "kampan/bytosti/kon.md": "---\ntitle: Kôň\ndescription: Jazdecké a ťažné zviera.\n---\n\nKôň.\n",
+        "pravidla/boj.md": "---\ntitle: Boj\ndescription: Kolá, iniciatíva, útoky.\n---\n\nBoj.\n",
+      },
+      priv: {
+        "kampan/relikvie/hadia-koruna.md": rel("Hadia koruna", "Ovládaš hady v okolí.", 3, "Koruna zo šupín."),
+        "kampan/relikvie/oko-orakula.md": rel("Oko orákula", "Raz za deň odpoveď áno/nie.", 1, "Sklenené oko."),
+        "kampan/bytosti/kon.md": "---\ntitle: Kôň\ndescription: Jazdecké a ťažné zviera. Unesie 4 sloty.\n---\n\nKôň.\n",
+        "kampan/duchovia/flame.md": "---\ntitle: Flame (Plameň)\ndescription: Šesťnohý červený mlok.\n---\n\nDuch ohňa.\n",
+        [SESSION_FILE]: JSON.stringify({ paths: ["kampan/relikvie/hadia-koruna.md"] }),
+      },
+    };
+    this.run = null;
+  }
+  async load(which) {
+    await new Promise((r) => setTimeout(r, 200));
+    return { files: { ...this.repos[which] } };
+  }
+  async commit(which, changes, message) {
+    await new Promise((r) => setTimeout(r, 300));
+    for (const c of changes) {
+      if (c.content == null) delete this.repos[which][c.path];
+      else this.repos[which][c.path] = c.content;
+    }
+    console.log(`[demo] commit ${which}: ${message}`, changes);
+    if (which === "pub") this.run = { status: "in_progress", conclusion: null, created: new Date().toISOString(), t: Date.now() };
+  }
+  async lastRun() {
+    if (this.run && this.run.status !== "completed" && Date.now() - this.run.t > 6000) {
+      this.run.status = "completed"; this.run.conclusion = "success";
+    }
+    return this.run;
+  }
+}
+
+/* ---------- stav ---------- */
+const state = {
+  items: new Map(),   // path -> { path, pub: text|null, priv: text|null }
+  pending: new Map(), // path -> true (zverejniť) | false (skryť)
+  stars: new Set(),
+  filter: "all",
+  query: "",
+  busy: false,
+  loaded: false,
+};
+let backend = null;
+
+const isListed = (p) => p.endsWith(".md") && !p.split("/").some((s) => s.startsWith(".") || s.startsWith("_") || s === "templates" || s === "private");
+const isVisibleNow = (it) => it.pub != null;
+const willBeVisible = (it) => state.pending.has(it.path) ? state.pending.get(it.path) : isVisibleNow(it);
+const textOf = (it) => it.priv ?? it.pub ?? "";
+const metaOf = (it) => {
+  const fm = frontmatter(textOf(it));
+  const base = it.path.split("/").pop().replace(/\.md$/, "");
+  return { title: fm.title || base, desc: fm.description || "" };
+};
+
+// Kto odkazuje na koho ([[wikilinky]], rozlíšenie „shortest" ako v Quartzi/Obsidiane).
+function resolveLink(target) {
+  const t = target.trim().replace(/\.md$/, "").replace(/^\/+/, "");
+  if (!t) return null;
+  if (t.includes("/")) {
+    for (const p of [t + ".md", t + "/index.md"]) if (state.items.has(p)) return p;
+    return null;
+  }
+  const hits = [...state.items.keys()].filter((p) => p === t + ".md" || p.endsWith("/" + t + ".md"));
+  return hits.sort((a, b) => a.split("/").length - b.split("/").length)[0] || null;
+}
+// path -> [cesty viditeľných stránok, ktoré naň odkazujú]
+function visibleBacklinks() {
+  const map = new Map();
+  for (const it of state.items.values()) {
+    if (!willBeVisible(it)) continue;
+    const text = isVisibleNow(it) ? it.pub : textOf(it);
+    for (const m of text.matchAll(/!?\[\[([^\]|#^]+)/g)) {
+      const target = resolveLink(m[1]);
+      if (!target || target === it.path) continue;
+      if (!map.has(target)) map.set(target, new Set());
+      map.get(target).add(it.path);
+    }
+  }
+  return map;
+}
+
+function setStatus(msg, err = false) {
+  const el = $("#status");
+  if (!el) return;
+  el.textContent = msg || "";
+  el.classList.toggle("err", !!err);
+}
+
+async function loadAll() {
+  setStatus("Načítavam…");
+  const [pub, priv] = await Promise.all([backend.load("pub"), backend.load("priv")]);
+  const items = new Map();
+  for (const [p, t] of Object.entries(pub.files)) if (isListed(p)) items.set(p, { path: p, pub: t, priv: null });
+  for (const [p, t] of Object.entries(priv.files)) {
+    if (!isListed(p)) continue;
+    if (items.has(p)) items.get(p).priv = t;
+    else items.set(p, { path: p, pub: null, priv: t });
+  }
+  state.items = items;
+  try { state.stars = new Set(JSON.parse(priv.files[SESSION_FILE] || "{}").paths || []); } catch { state.stars = new Set(); }
+  for (const p of [...state.pending.keys()]) if (!items.has(p)) state.pending.delete(p);
+  if (!state.loaded && state.stars.size) state.filter = "session";
+  state.loaded = true;
+  setStatus("");
+}
+
+/* ---------- vykreslenie ---------- */
+function renderSetup(errMsg) {
+  $("#newBtn").hidden = true;
+  $("#pendingBar").classList.remove("show");
+  $("#app").innerHTML = `
+    <div class="setup">
+      <h2>Prvé nastavenie</h2>
+      <ol>
+        <li>Na GitHube si vytvor <b>súkromné</b> repo <code>${esc(cfg.privRepo)}</code> (stačí prázdne). Sem pôjdu veci, ktoré hráči ešte nenašli.</li>
+        <li>Vytvor token: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token</a> →
+          <i>Repository access: Only select repositories</i> → vyber <code>${esc(cfg.pubRepo)}</code> aj <code>${esc(cfg.privRepo)}</code> →
+          <i>Permissions</i>: <b>Contents: Read and write</b>, <b>Actions: Read-only</b> (na stav nasadenia).</li>
+        <li>Token vlož sem. Uloží sa len v tomto prehliadači, nikam inam sa neposiela.</li>
+      </ol>
+      <form id="setupForm">
+        <div class="grid2">
+          <label>GitHub účet<input type="text" name="owner" value="${esc(cfg.owner)}" required></label>
+          <label>Verejné repo (stránka)<input type="text" name="pubRepo" value="${esc(cfg.pubRepo)}" required></label>
+        </div>
+        <label>Súkromné repo (knižnica)<input type="text" name="privRepo" value="${esc(cfg.privRepo)}" required></label>
+        <label>Token<input type="password" name="token" value="${esc(cfg.token)}" autocomplete="off" required></label>
+        ${errMsg ? `<p class="note warn">${esc(errMsg)}</p>` : ""}
+        <div class="actions">
+          <a class="btn left" href="?demo">Vyskúšať demo</a>
+          <button class="btn primary">Uložiť a načítať</button>
+        </div>
+      </form>
+    </div>`;
+  $("#setupForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    cfg = { owner: f.get("owner").trim(), pubRepo: f.get("pubRepo").trim(), privRepo: f.get("privRepo").trim(), token: f.get("token").trim() };
+    saveCfg(cfg);
+    start();
+  };
+}
+
+function folderTitle(folder) {
+  if (!folder) return "Úvod";
+  const idx = state.items.get(folder + "/index.md");
+  const t = idx ? frontmatter(textOf(idx)).title : null;
+  return t || folder.split("/").pop();
+}
+
+function matches(it) {
+  const m = metaOf(it);
+  if (state.query) {
+    const q = state.query.toLowerCase();
+    if (!(m.title + " " + m.desc + " " + it.path).toLowerCase().includes(q)) return false;
+  }
+  switch (state.filter) {
+    case "session": return state.stars.has(it.path);
+    case "visible": return willBeVisible(it);
+    case "hidden": return !willBeVisible(it);
+    default: return true;
+  }
+}
+
+function render() {
+  $("#newBtn").hidden = false;
+  const all = [...state.items.values()];
+  const counts = {
+    all: all.length,
+    session: all.filter((i) => state.stars.has(i.path)).length,
+    visible: all.filter(willBeVisible).length,
+    hidden: all.filter((i) => !willBeVisible(i)).length,
+  };
+  const onlyPub = all.filter((i) => i.priv == null).length;
+  const chip = (k, label) => `<button class="chip" data-filter="${k}" aria-pressed="${state.filter === k}">${label} · ${counts[k]}</button>`;
+
+  const groups = new Map();
+  for (const it of all.filter(matches)) {
+    const folder = it.path.includes("/") ? it.path.slice(0, it.path.lastIndexOf("/")) : "";
+    if (!groups.has(folder)) groups.set(folder, []);
+    groups.get(folder).push(it);
+  }
+  const folders = [...groups.keys()].sort((a, b) => a.localeCompare(b, "sk"));
+  backlinks = visibleBacklinks();
+
+  const rows = folders.map((folder) => {
+    const list = groups.get(folder).sort((a, b) => {
+      const ai = a.path.endsWith("/index.md") || a.path === "index.md", bi = b.path.endsWith("/index.md") || b.path === "index.md";
+      if (ai !== bi) return ai ? -1 : 1;
+      return metaOf(a).title.replace(/^[^\p{L}\p{N}]+/u, "").localeCompare(metaOf(b).title.replace(/^[^\p{L}\p{N}]+/u, ""), "sk", { numeric: true });
+    });
+    return `
+      <section class="group">
+        <h2>${esc(folderTitle(folder))} <span class="count">${esc(folder || "/")}</span></h2>
+        ${list.map(rowHtml).join("")}
+      </section>`;
+  }).join("");
+
+  $("#app").innerHTML = `
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Hľadať…" value="${esc(state.query)}">
+      <button class="btn" id="reloadBtn" title="Načítať znova z GitHubu">↻</button>
+    </div>
+    <div class="chips">
+      ${chip("session", "★ Na session")}${chip("all", "Všetko")}${chip("visible", "Hráči vidia")}${chip("hidden", "Skryté")}
+    </div>
+    <p class="status" id="status"></p>
+    ${onlyPub ? `<p class="note">${onlyPub} ${onlyPub === 1 ? "vec je" : onlyPub < 5 ? "veci sú" : "vecí je"} zatiaľ len na stránke, nie v knižnici. Pri skrytí sa do knižnice uložia samy, alebo <button class="btn" id="backupBtn">ulož všetky do knižnice</button></p>` : ""}
+    ${rows || `<p class="empty">${state.filter === "session" ? "Na session zatiaľ nič. Hviezdičkou ★ si pripravíš veci, ktoré môžu hráči nájsť." : "Nič nenašlo."}</p>`}
+  `;
+  bindMain();
+  renderPending();
+}
+
+let backlinks = new Map();
+function rowHtml(it) {
+  const m = metaOf(it);
+  const vis = willBeVisible(it);
+  const linkers = vis ? [] : [...(backlinks.get(it.path) || [])].map((p) => metaOf(state.items.get(p)).title);
+  const changed = state.pending.has(it.path);
+  const chapter = it.path.endsWith("/index.md") || it.path === "index.md";
+  const diff = it.pub != null && it.priv != null && it.pub !== it.priv;
+  return `
+    <div class="row ${vis ? "" : "hidden-item"}" data-path="${esc(it.path)}">
+      <button class="switch ${changed ? "changed" : ""}" role="switch" aria-checked="${vis}" data-act="toggle" title="${vis ? "Hráči vidia" : "Skryté pred hráčmi"}" aria-label="Hráči vidia: ${esc(m.title)}"></button>
+      <div class="main">
+        <div class="title">${esc(m.title)}${chapter ? '<span class="badge chapter">kapitola</span>' : ""}${changed ? `<span class="badge pending">${vis ? "zverejniť" : "skryť"}</span>` : ""}${diff ? '<span class="badge diff" title="Text na stránke sa líši od knižnice">iná verzia</span>' : ""}</div>
+        ${m.desc ? `<div class="desc">${esc(m.desc)}</div>` : ""}
+        ${linkers.length ? `<div class="links-warn" title="Na stránke hráčov sa tieto odkazy zobrazia ako obyčajný text; samostatná položka zoznamu sa vynechá.">↳ odkazuje naň: ${linkers.map(esc).join(", ")}</div>` : ""}
+      </div>
+      <button class="icon-btn star" data-act="star" aria-pressed="${state.stars.has(it.path)}" title="Pripraviť na session">★</button>
+      <button class="icon-btn" data-act="edit" title="Upraviť" aria-label="Upraviť ${esc(m.title)}">✎</button>
+    </div>`;
+}
+
+function renderPending() {
+  const n = state.pending.size;
+  $("#pendingBar").classList.toggle("show", n > 0);
+  if (!n) return;
+  const show = [...state.pending.values()].filter(Boolean).length;
+  const hide = n - show;
+  const parts = [];
+  if (show) parts.push(`zverejniť <b>${show}</b>`);
+  if (hide) parts.push(`skryť <b>${hide}</b>`);
+  $("#pendingSummary").innerHTML = parts.join(", ");
+  $("#publishBtn").disabled = state.busy;
+}
+
+function bindMain() {
+  $("#q").oninput = (e) => {
+    state.query = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const q = $("#q"); q.focus(); q.setSelectionRange(pos, pos);
+  };
+  $("#reloadBtn").onclick = () => withBusy(async () => { await loadAll(); render(); });
+  $("#backupBtn") && ($("#backupBtn").onclick = backupAll);
+  document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.filter = b.dataset.filter; render(); });
+  document.querySelectorAll(".row [data-act]").forEach((b) => b.onclick = () => {
+    const it = state.items.get(b.closest(".row").dataset.path);
+    if (b.dataset.act === "toggle") toggle(it);
+    else if (b.dataset.act === "star") toggleStar(it);
+    else openEditor(it);
+  });
+}
+
+/* ---------- akcie ---------- */
+async function withBusy(fn) {
+  if (state.busy) return;
+  state.busy = true; renderPending();
+  try { await fn(); }
+  catch (e) { console.error(e); setStatus(e.message || String(e), true); }
+  finally { state.busy = false; renderPending(); }
+}
+
+function toggle(it) {
+  const target = !willBeVisible(it);
+  if (target === isVisibleNow(it)) state.pending.delete(it.path);
+  else state.pending.set(it.path, target);
+  render();
+}
+
+let starTimer = null;
+function toggleStar(it) {
+  if (state.stars.has(it.path)) state.stars.delete(it.path); else state.stars.add(it.path);
+  render();
+  clearTimeout(starTimer);
+  const save = () => {
+    if (state.busy) { starTimer = setTimeout(save, 1000); return; }
+    withBusy(async () => {
+      await backend.commit("priv", [{ path: SESSION_FILE, content: JSON.stringify({ paths: [...state.stars].sort() }, null, 2) + "\n" }], "Príprava na session");
+      setStatus("Príprava na session uložená.");
+    });
+  };
+  starTimer = setTimeout(save, 1200);
+}
+
+async function publish() {
+  await withBusy(async () => {
+    const pubChanges = [], privChanges = [];
+    const names = [];
+    for (const [path, show] of state.pending) {
+      const it = state.items.get(path);
+      names.push((show ? "+ " : "− ") + metaOf(it).title);
+      if (show) {
+        pubChanges.push({ path, content: textOf(it) });
+      } else {
+        if (it.priv == null) privChanges.push({ path, content: it.pub }); // nestratiť pri skrytí
+        pubChanges.push({ path, content: null });
+      }
+    }
+    setStatus("Ukladám…");
+    if (privChanges.length) await backend.commit("priv", privChanges, "Záloha skrytých vecí");
+    await backend.commit("pub", pubChanges, "Správca: " + names.join(", "));
+    state.pending.clear();
+    await loadAll();
+    render();
+    watchDeploy();
+  });
+}
+
+async function backupAll() {
+  await withBusy(async () => {
+    const changes = [...state.items.values()].filter((i) => i.priv == null).map((i) => ({ path: i.path, content: i.pub }));
+    setStatus("Ukladám do knižnice…");
+    await backend.commit("priv", changes, "Záloha zo stránky");
+    await loadAll();
+    render();
+    setStatus(`Do knižnice uložené: ${changes.length}.`);
+  });
+}
+
+let deployTimer = null;
+async function watchDeploy() {
+  clearTimeout(deployTimer);
+  const started = Date.now();
+  setStatus("Uložené. Stránka sa prestavuje, hráči to uvidia o 1–2 minúty…");
+  const tick = async () => {
+    const run = await backend.lastRun();
+    if (!run) return; // bez oprávnenia Actions nevieme stav, ostane hláška vyššie
+    if (run.status === "completed" && Date.parse(run.created) >= started - 60000) {
+      if (run.conclusion === "success") setStatus("✓ Hotovo, hráči to už vidia (obnovte stránku).");
+      else setStatus(`Nasadenie zlyhalo (${run.conclusion}). Pozri záložku Actions na GitHube.`, true);
+      return;
+    }
+    if (Date.now() - started < 6 * 60000) deployTimer = setTimeout(tick, 8000);
+  };
+  deployTimer = setTimeout(tick, DEMO ? 1500 : 10000);
+}
+
+/* ---------- editor ---------- */
+function folderOptions() {
+  const set = new Set();
+  for (const p of state.items.keys()) if (p.includes("/")) set.add(p.slice(0, p.lastIndexOf("/")));
+  return [...set].sort((a, b) => a.localeCompare(b, "sk"));
+}
+
+function openEditor(it) {
+  const dlg = $("#editDlg"), form = $("#editForm");
+  const isNew = !it;
+  const diff = it && it.pub != null && it.priv != null && it.pub !== it.priv;
+  if (isNew) {
+    const folders = folderOptions();
+    const def = folders.includes("kampan/relikvie") ? "kampan/relikvie" : folders[0];
+    form.innerHTML = `
+      <h2>Nová vec</h2>
+      <div class="grid2">
+        <label>Kapitola<select name="folder">${folders.map((f) => `<option value="${esc(f)}" ${f === def ? "selected" : ""}>${esc(folderTitle(f))} (${esc(f)})</option>`).join("")}</select></label>
+        <label>Názov<input type="text" name="title" required></label>
+      </div>
+      <label>Krátky popis <span class="hint">zobrazí sa v zoznamoch a tabuľke relikvií</span><input type="text" name="description"></label>
+      <div class="grid2" id="relFields">
+        <label>Náboje<input type="text" name="naboje"></label>
+        <label>Dobitie<input type="text" name="dobitie"></label>
+      </div>
+      <label>Text <span class="hint">markdown; <code>&lt;span class="neobjavene"&gt;???&lt;/span&gt;</code> = neobjavená vlastnosť</span><textarea name="body"></textarea></label>
+      <label class="check"><input type="checkbox" name="publishNow"> hneď zverejniť hráčom</label>
+      <label class="check"><input type="checkbox" name="star" checked> ★ pripraviť na session</label>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Zrušiť</button>
+        <button class="btn primary" value="save">Uložiť</button>
+      </div>`;
+    const sel = form.folder;
+    const syncRel = () => { $("#relFields").hidden = sel.value !== "kampan/relikvie"; };
+    sel.onchange = syncRel; syncRel();
+  } else {
+    const m = metaOf(it);
+    form.innerHTML = `
+      <h2>${esc(m.title)}</h2>
+      <p class="note"><code>${esc(it.path)}</code> · ${isVisibleNow(it) ? "hráči vidia" : "skryté"}${it.priv == null ? " · zatiaľ nie je v knižnici" : ""}</p>
+      ${diff ? `<p class="note warn">Text na stránke sa líši od knižnice (asi si ho menil inde). V editore je verzia z knižnice. <button class="btn" type="button" id="usePub">Načítať verziu zo stránky</button></p>` : ""}
+      <label>Celý súbor<textarea name="text" style="min-height: 22rem">${esc(textOf(it))}</textarea></label>
+      <p class="note">Uložením sa zmena zapíše do knižnice${isVisibleNow(it) ? " aj na stránku hráčov" : ""}.</p>
+      <div class="actions">
+        <button class="btn danger left" type="button" id="delBtn">Zmazať</button>
+        <button class="btn" value="cancel" formnovalidate>Zrušiť</button>
+        <button class="btn primary" value="save">Uložiť</button>
+      </div>`;
+    if (diff) $("#usePub").onclick = () => { form.text.value = it.pub; };
+    $("#delBtn").onclick = () => deleteItem(it);
+  }
+  form.onsubmit = (e) => {
+    if (e.submitter?.value !== "save") return;
+    e.preventDefault();
+    const f = new FormData(form);
+    dlg.close();
+    if (isNew) createItem(f); else saveItem(it, f.get("text"));
+  };
+  dlg.showModal();
+}
+
+async function createItem(f) {
+  const folder = f.get("folder"), title = f.get("title").trim();
+  let path = `${folder}/${slugify(title)}.md`;
+  for (let i = 2; state.items.has(path); i++) path = `${folder}/${slugify(title)}-${i}.md`;
+  const fm = ["---", `title: ${yamlStr(title)}`];
+  if (f.get("description").trim()) fm.push(`description: ${yamlStr(f.get("description").trim())}`);
+  if (folder === "kampan/relikvie") {
+    if (f.get("naboje")?.trim()) fm.push(`naboje: ${yamlStr(f.get("naboje").trim())}`);
+    if (f.get("dobitie")?.trim()) fm.push(`dobitie: ${yamlStr(f.get("dobitie").trim())}`);
+  }
+  if (folder.startsWith("kampan")) fm.push("tags: [kampan]");
+  fm.push("---", "");
+  const text = fm.join("\n") + "\n" + f.get("body").trim() + "\n";
+  await withBusy(async () => {
+    setStatus("Ukladám…");
+    const privChanges = [{ path, content: text }];
+    if (f.get("star")) {
+      state.stars.add(path);
+      privChanges.push({ path: SESSION_FILE, content: JSON.stringify({ paths: [...state.stars].sort() }, null, 2) + "\n" });
+    }
+    await backend.commit("priv", privChanges, `Nová vec: ${title}`);
+    if (f.get("publishNow")) await backend.commit("pub", [{ path, content: text }], `Správca: + ${title}`);
+    await loadAll();
+    render();
+    if (f.get("publishNow")) watchDeploy(); else setStatus(`„${title}" uložené do knižnice (skryté).`);
+  });
+}
+
+async function saveItem(it, text) {
+  if (text === textOf(it) && !(it.pub != null && it.pub !== text)) return;
+  await withBusy(async () => {
+    setStatus("Ukladám…");
+    const title = metaOf(it).title;
+    await backend.commit("priv", [{ path: it.path, content: text }], `Úprava: ${title}`);
+    const live = isVisibleNow(it) && it.pub !== text;
+    if (live) await backend.commit("pub", [{ path: it.path, content: text }], `Správca: úprava ${title}`);
+    await loadAll();
+    render();
+    if (live) watchDeploy(); else setStatus(`„${title}" uložené.`);
+  });
+}
+
+async function deleteItem(it) {
+  const title = metaOf(it).title;
+  if (!confirm(`Naozaj zmazať „${title}" z knižnice${isVisibleNow(it) ? " aj zo stránky hráčov" : ""}? (V histórii repa ostane.)`)) return;
+  $("#editDlg").close();
+  await withBusy(async () => {
+    if (it.priv != null) await backend.commit("priv", [{ path: it.path, content: null }], `Zmazané: ${title}`);
+    if (it.pub != null) await backend.commit("pub", [{ path: it.path, content: null }], `Správca: zmazané ${title}`);
+    state.pending.delete(it.path);
+    state.stars.delete(it.path);
+    await loadAll();
+    render();
+    if (it.pub != null) watchDeploy(); else setStatus(`„${title}" zmazané.`);
+  });
+}
+
+/* ---------- štart ---------- */
+async function start() {
+  if (DEMO) backend = new DemoBackend();
+  else if (!cfg.token) return renderSetup();
+  else backend = new GitHubBackend(cfg);
+  $("#siteLink").href = DEMO ? "../" : `https://${cfg.owner.toLowerCase()}.github.io/${cfg.pubRepo}/`;
+  $("#app").innerHTML = `<p class="status" id="status"></p>`;
+  try {
+    await loadAll();
+    render();
+    if (DEMO) setStatus("Demo: zmeny sa nikam neukladajú.");
+  } catch (e) {
+    console.error(e);
+    if (DEMO) return setStatus(e.message, true);
+    renderSetup(e.message);
+  }
+}
+
+$("#newBtn").onclick = () => openEditor(null);
+$("#settingsBtn").onclick = () => { if (DEMO) location.search = ""; else renderSetup(); };
+$("#publishBtn").onclick = publish;
+$("#discardBtn").onclick = () => { state.pending.clear(); render(); };
+window.addEventListener("beforeunload", (e) => { if (state.pending.size) e.preventDefault(); });
+start();
+</script>
+</body>
+</html>

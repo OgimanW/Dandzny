@@ -30,7 +30,22 @@ content/
 └── kampan/               relikvie/, recepty/, duchovia/, bohovia/, bytosti/, reputácia, zručnosti
 ```
 
-## Ako pridať novú vec
+## Správca (admin)
+
+Na **/admin/** (napr. `https://ogimanw.github.io/Dandzny/admin/`) je rozhranie, kde máš všetko pokope a prepínačom určuješ, čo hráči vidia.
+
+- **Knižnica** = súkromné repo `Dandzny-gm`: všetky veci vrátane tých, ktoré hráči ešte nenašli. Štruktúra je rovnaká ako `content/`.
+- **Stránka hráčov** = `content/` v tomto repe: len to, čo je zverejnené.
+- Prepínač pri veci → **Zverejniť**: vec sa skopíruje do `content/` (alebo zmaže), stránka sa prestaví za 1–2 minúty.
+- Odkaz `[[...]]` na skrytú stránku sa na webe zobrazí ako obyčajný text a položka zoznamu, ktorá je len takýmto odkazom, sa vynechá (napr. úvodný zoznam kapitol). Správca pri skrytej veci ukáže, ktoré stránky na ňu odkazujú.
+- ★ = pripravené na session. Pred hrou si hviezdičkou označ, čo môžu nájsť, počas hry stačí filter **★ Na session** a prepínač.
+- **+ Nová vec** vytvorí súbor z formulára (skrytý, kým ho nezverejníš). ✎ upraví celý súbor; ak je vec zverejnená, zmena ide aj na stránku.
+
+Prvé spustenie: vytvor súkromné repo `Dandzny-gm` a fine-grained token (Contents: Read and write na obe repá, Actions: Read-only). Token sa uloží len v tvojom prehliadači. Bez GitHubu si to vieš pozrieť na `/admin/?demo`.
+
+Kód je v `admin/index.html` (jeden súbor, bez buildu), na stránku ho kopíruje workflow.
+
+## Ako pridať novú vec ručne
 
 1. Skopíruj podobný súbor v tom istom priečinku (napr. `kampan/relikvie/vinuty-bic.md`).
 2. Prepíš `title`, `description` a text. Pri relikvii aj `naboje` (zobrazí sa v tabuľke spolu s `description`).
@@ -45,5 +60,6 @@ content/
 
 - `quartz/i18n/locales/sk-SK.ts` — slovenčina (Quartz ju nemal).
 - `quartz/styles/custom.scss` — `[!homebrew]`, `???`, kompaktné tabuľky pre mobil, skryté dátumy a technické popisy.
+- `quartz/plugins/builtins/links.ts` + `disableBrokenWikilinks` v `quartz.config.yaml` — odkazy na nezverejnené stránky ako text.
 - `quartz.ts` — zoznamy v kapitolách zoradené abecedne.
 - `quartz.config.yaml` — názov, farby, fonty; vypnutá nefunkčná TTRPG téma a pluginy na mapy.

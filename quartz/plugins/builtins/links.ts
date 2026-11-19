@@ -212,6 +212,35 @@ export const Links: QuartzTransformerPlugin<LinksConfig> = (userOpts) => {
               }
             })
 
+            // Dandžny: odkaz na nezverejnenú stránku → obyčajný text; položka zoznamu, ktorá je len
+            // takýmto odkazom (napr. v úvodnom zozname kapitol), sa vynechá celá.
+            if (opts.disableBrokenWikilinks) {
+              const isBroken = (n: unknown): n is Element =>
+                (n as Element)?.type === "element" &&
+                (n as Element).tagName === "a" &&
+                ((n as Element).properties?.className as string[] | undefined)?.includes("broken") ===
+                  true
+              const meaningful = (children: Element["children"]) =>
+                children.filter((c) => !(c.type === "text" && c.value.trim() === ""))
+              const onlyBrokenLink = (li: Element): boolean => {
+                const kids = meaningful(li.children)
+                if (kids.length !== 1) return false
+                const k = kids[0]
+                if (isBroken(k)) return true
+                return k.type === "element" && k.tagName === "p" && onlyBrokenLink(k)
+              }
+              visit(tree, "element", (node: Element, index, parent) => {
+                if (node.tagName === "li" && parent && index !== undefined && onlyBrokenLink(node)) {
+                  parent.children.splice(index, 1)
+                  return index
+                }
+                if (isBroken(node)) {
+                  node.tagName = "span"
+                  node.properties = { className: ["skryty-odkaz"] }
+                }
+              })
+            }
+
             // links inside frontmatter values (built-in frontmatter) count as outgoing links too
             for (const fmLink of file.data.frontmatterLinks ?? []) {
               // external URLs (e.g. `repository: "[repo](https://github.com/…)"`) are not pages
